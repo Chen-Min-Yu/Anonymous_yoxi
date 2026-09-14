@@ -1,0 +1,103 @@
+{
+  "trips": 150649,
+  "weekdays": 64,
+  "note": "分格比對為保守估計（跨格的近距離配對會漏算）",
+  "grid": [
+    {
+      "rule": "strict",
+      "pickup_m": 600,
+      "dropoff_m": 1000,
+      "window_min": 10,
+      "demand_x": 1,
+      "match_share": 0.0125
+    },
+    {
+      "rule": "strict",
+      "pickup_m": 600,
+      "dropoff_m": 1000,
+      "window_min": 10,
+      "demand_x": 3,
+      "match_share": 0.0319
+    },
+    {
+      "rule": "strict",
+      "pickup_m": 600,
+      "dropoff_m": 1000,
+      "window_min": 10,
+      "demand_x": 5,
+      "match_share": 0.0474
+    },
+    {
+      "rule": "strict",
+      "pickup_m": 600,
+      "dropoff_m": 1000,
+      "window_min": 10,
+      "demand_x": 10,
+      "match_share": 0.0759
+    },
+    {
+      "rule": "meetup",
+      "pickup_m": 1000,
+      "dropoff_m": 1500,
+      "window_min": 15,
+      "demand_x": 1,
+      "match_share": 0.0695
+    },
+    {
+      "rule": "meetup",
+      "pickup_m": 1000,
+      "dropoff_m": 1500,
+      "window_min": 15,
+      "demand_x": 3,
+      "match_share": 0.1511
+    },
+    {
+      "rule": "meetup",
+      "pickup_m": 1000,
+      "dropoff_m": 1500,
+      "window_min": 15,
+      "demand_x": 5,
+      "match_share": 0.2095
+    },
+    {
+      "rule": "meetup",
+      "pickup_m": 1000,
+      "dropoff_m": 1500,
+      "window_min": 15,
+      "demand_x": 10,
+      "match_share": 0.296
+    },
+    {
+      "rule": "loose",
+      "pickup_m": 1500,
+      "dropoff_m": 2500,
+      "window_min": 20,
+      "demand_x": 1,
+      "match_share": 0.2576
+    },
+    {
+      "rule": "loose",
+      "pickup_m": 1500,
+      "dropoff_m": 2500,
+      "window_min": 20,
+      "demand_x": 3,
+      "match_share": 0.4355
+    },
+    {
+      "rule": "loose",
+      "pickup_m": 1500,
+      "dropoff_m": 2500,
+      "window_min": 20,
+      "demand_x": 5,
+      "match_share": 0.5245
+    },
+    {
+      "rule": "loose",
+      "pickup_m": 1500,
+      "dropoff_m": 2500,
+      "window_min": 20,
+      "demand_x": 10,
+      "match_share": 0.6276
+    }
+  ]
+}
