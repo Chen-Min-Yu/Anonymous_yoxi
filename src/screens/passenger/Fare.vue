@@ -1,14 +1,40 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { back, go, toast } from '../../store'
-import { split, segments } from '../../data/scenario'
+import { split, segments, riders as baseRiders } from '../../data/scenario'
 import { riderColor } from '../../components/mapkit'
 import Icon from '../../components/Icon.vue'
 
 const sel = ref('A')
-const r = computed(() => split.riders.find((x) => x.id === sel.value))
 const totalKm = (split.totalMeters / 1000).toFixed(1)
-const fmt = (n) => n.toFixed(1)
+
+// 每個人依「自己實際共乘的里程」佔全體總里程的比例分攤車資，不再拆解共同/專屬路段
+const pctSplit = computed(() => {
+  const withOwnMeters = baseRiders.map((br) => ({
+    ...br,
+    ownMeters: segments.filter((s) => s.riders.includes(br.id)).reduce((sum, s) => sum + s.meters, 0),
+  }))
+  const totalOwnMeters = withOwnMeters.reduce((sum, x) => sum + x.ownMeters, 0)
+
+  return withOwnMeters.map((x) => {
+    const solo = split.riders.find((s) => s.id === x.id).solo
+    const rideShare = Math.round((x.ownMeters / totalOwnMeters) * split.totalFare)
+    const serviceFee = split.riders.find((s) => s.id === x.id).serviceFee
+    const pay = rideShare + serviceFee
+    const subsidy = Math.round(pay * 0.5)
+    return {
+      ...x,
+      pct: Math.round((x.ownMeters / totalOwnMeters) * 100),
+      rideShare,
+      serviceFee,
+      pay,
+      solo,
+      savedPct: Math.round(((solo - pay) / solo) * 100),
+      subsidy,
+    }
+  })
+})
+const r = computed(() => pctSplit.value.find((x) => x.id === sel.value))
 const selfPay = computed(() => r.value.pay - r.value.subsidy)
 
 function confirm() {
@@ -51,38 +77,23 @@ function confirm() {
           </div>
         </section>
 
-        <!-- 路段拆解 -->
+        <!-- 里程佔比分攤 -->
         <section class="block">
-          <div class="h2">每一段怎麼分</div>
-          <p class="sub" style="margin-top: 2px">整趟 {{ totalKm }} km 跳表 ${{ split.totalFare }}。每段依里程計價，只由坐在車上的人平均分攤。</p>
+          <div class="h2">里程數占比</div>
+          <p class="sub" style="margin-top: 2px">整趟 {{ totalKm }} km 跳表 ${{ split.totalFare }}。依每個人實際共乘的里程，佔全體總里程的比例分攤。</p>
 
-          <div class="strip">
-            <div
-              v-for="s in segments" :key="s.key" class="strip-seg"
-              :class="[s.riders.length > 1 ? 'shared' : 'solo', { mine: s.riders.includes(sel), faded: !s.riders.includes(sel) }]"
-              :style="{ flex: s.meters }"
-            ></div>
+          <div class="pct-bar">
+            <span v-for="x in pctSplit" :key="x.id" class="pct-seg" :class="{ mine: x.id === sel }" :style="{ flex: x.pct, background: riderColor[x.id] }"></span>
           </div>
 
-          <div class="segs">
-            <div v-for="s in segments" :key="s.key" class="seg" :class="{ faded: !s.riders.includes(sel) }">
-              <div class="seg-top">
-                <span class="chip" :class="s.riders.length > 1 ? 'chip-blue' : 'chip-red'">{{ s.label }}</span>
-                <span class="seg-route">{{ s.from }} <Icon name="arrow" :size="12" /> {{ s.to }}</span>
-                <span class="seg-km num">{{ (s.meters / 1000).toFixed(1) }} km</span>
-              </div>
-              <div class="seg-calc">
-                <span class="num">${{ fmt(s.meters * split.perMeter) }}</span>
-                <span class="op">÷</span>
-                <span class="faces">
-                  <i v-for="id in s.riders" :key="id" :style="{ background: riderColor[id] }"></i>
-                </span>
-                <span class="num">{{ s.riders.length }} 人</span>
-                <span class="op">=</span>
-                <b class="num" v-if="s.riders.includes(sel)">${{ fmt((s.meters * split.perMeter) / s.riders.length) }}</b>
-                <b class="num none" v-else>不需負擔</b>
-              </div>
-            </div>
+          <div class="pct-list">
+            <button v-for="x in pctSplit" :key="x.id" class="pct-row" :class="{ on: x.id === sel }" @click="sel = x.id">
+              <i :style="{ background: riderColor[x.id] }"></i>
+              <span class="pct-name">{{ x.me ? '你' : x.name }}</span>
+              <span class="pct-km num">{{ (x.ownMeters / 1000).toFixed(1) }} km</span>
+              <span class="pct-pct num">{{ x.pct }}%</span>
+              <b class="num">${{ x.rideShare }}</b>
+            </button>
           </div>
         </section>
 
@@ -130,25 +141,18 @@ function confirm() {
 .cb:last-child em { color: #fff; }
 
 .block { margin-top: 20px; }
-.strip { display: flex; gap: 3px; height: 12px; margin: 14px 0 10px; }
-.strip-seg { border-radius: 6px; transition: opacity .3s; }
-.strip-seg.shared { background: var(--blue); }
-.strip-seg.solo { background: var(--red); }
-.strip-seg.faded { opacity: .2; }
+.pct-bar { display: flex; gap: 3px; height: 12px; margin: 14px 0 10px; border-radius: 6px; overflow: hidden; }
+.pct-seg { transition: opacity .3s; opacity: .5; }
+.pct-seg.mine { opacity: 1; }
 
-.segs { display: flex; flex-direction: column; gap: 8px; }
-.seg { background: #fff; border-radius: 14px; padding: 12px; box-shadow: var(--shadow-card); transition: opacity .3s; }
-.seg.faded { opacity: .5; }
-.seg-top { display: flex; align-items: center; gap: 8px; }
-.seg-route { flex: 1; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
-.seg-km { font-size: 12px; color: var(--ink-3); font-weight: 600; }
-.seg-calc { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-size: 13px; color: var(--ink-2); font-weight: 600; }
-.op { color: var(--ink-3); }
-.faces { display: flex; }
-.faces i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; margin-left: -4px; }
-.faces i:first-child { margin-left: 0; }
-.seg-calc b { margin-left: auto; font-size: 17px; font-weight: 800; color: var(--navy); }
-.seg-calc b.none { font-size: 12px; color: var(--ink-3); font-family: var(--font); }
+.pct-list { display: flex; flex-direction: column; gap: 8px; }
+.pct-row { display: flex; align-items: center; gap: 10px; width: 100%; background: #fff; border-radius: 14px; padding: 12px 14px; box-shadow: var(--shadow-card); text-align: left; opacity: .6; }
+.pct-row.on { opacity: 1; outline: 1.5px solid var(--navy); }
+.pct-row i { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.pct-name { font-size: 14px; font-weight: 700; }
+.pct-km { font-size: 12px; color: var(--ink-3); font-weight: 600; }
+.pct-pct { font-size: 13px; color: var(--ink-2); font-weight: 700; margin-left: auto; }
+.pct-row b { font-size: 17px; font-weight: 800; color: var(--navy); }
 
 .bill { margin-top: 16px; padding: 6px 16px; }
 .li { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; font-size: 14px; color: var(--ink-2); }
