@@ -5,12 +5,9 @@ import { commuteCurve, corridor } from '../../data/pulse'
 import { me } from '../../data/scenario'
 import Icon from '../../components/Icon.vue'
 
-const hover = ref(commuteCurve.findIndex((d) => d.t === '08:15'))
-const maxTotal = Math.ceil(Math.max(...commuteCurve.map((d) => d.wait + d.ride)) / 10) * 10
 const POOL_RIDE = 22 // 08:15 車程中位 20 分 + 多停 2 站約 2 分
 const total = (d) => Math.round(d.wait + d.ride)
-const H = 120
-const cur = computed(() => commuteCurve[hover.value])
+const cur = computed(() => commuteCurve.find((d) => d.t === '08:15'))
 
 const options = [
   { k: 'pool', title: '順路共乘', time: '08:15 集合點上車', meta: `步行 ${me.walk.minutes} 分 · 車程約 ${POOL_RIDE} 分`, price: `$${me.pay}`, tag: `省 $${me.saved}`, action: '查看媒合' },
@@ -62,32 +59,6 @@ function doAct(u) {
             </span>
           </div>
 
-          <div class="chart" role="img" aria-label="不同出發時間的門到門分鐘數">
-            <div class="y">
-              <span class="num">{{ maxTotal }}</span>
-              <span class="num">{{ Math.round(maxTotal / 2) }}</span>
-              <span class="num">0</span>
-            </div>
-            <div class="plot">
-              <div class="grid"><i></i><i></i><i></i></div>
-              <button
-                v-for="(d, i) in commuteCurve" :key="d.t" class="col" :class="{ on: hover === i, mine: d.t === '08:15' }"
-                @mouseenter="hover = i" @focus="hover = i" @click="hover = i"
-              >
-                <span class="stack" :style="{ height: ((d.wait + d.ride) / maxTotal) * H + 'px' }">
-                  <span class="seg wait" :style="{ flex: d.wait }"></span>
-                  <span class="seg ride" :style="{ flex: d.ride }"></span>
-                </span>
-                <span class="xl num">{{ d.t }}</span>
-                <span v-if="d.t === '08:15'" class="best">你常搭</span>
-              </button>
-            </div>
-          </div>
-          <div class="legend">
-            <span><i class="lw"></i>等車</span>
-            <span><i class="lr"></i>車程</span>
-            <span class="muted">中位數，單位：分鐘</span>
-          </div>
           <p class="pool-cmp">同一時間改搭順路共乘：步行 {{ me.walk.minutes }} 分 + 車程約 {{ POOL_RIDE }} 分，門到門多約 3 分鐘，車資 ${{ me.pay }}（自己叫車約 ${{ me.solo }}）。</p>
         </section>
 
@@ -151,29 +122,7 @@ function doAct(u) {
 .ro-v b { font-size: 22px; font-weight: 800; color: var(--navy); margin: 0 2px; }
 .ro-v small { font-size: 12px; color: var(--ink-3); }
 
-.chart { display: grid; grid-template-columns: 22px 1fr; gap: 6px; margin-top: 10px; }
-.y { display: flex; flex-direction: column; justify-content: space-between; height: 120px; font-size: 10px; color: var(--ink-3); text-align: right; transform: translateY(-5px); }
-.plot { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; align-items: end; height: 142px; }
-.grid { position: absolute; left: 0; right: 0; top: 0; height: 120px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
-.grid i { height: 1px; background: var(--line); }
-.col { position: relative; height: 142px; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; padding-bottom: 22px; border-radius: 8px; }
-.col.on { background: rgba(5,17,34,.04); }
-.stack { width: 62%; display: flex; flex-direction: column; gap: 2px; position: relative; z-index: 1; }
-.seg { display: block; min-height: 2px; }
-.seg:first-child { border-radius: 4px 4px 0 0; }
-.seg.wait { background: #B8C8DC; }
-.seg.ride { background: var(--blue); }
-.col.mine .seg.ride { background: var(--red); }
 .pool-cmp { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--red-soft); color: var(--red-deep); font-size: 12px; line-height: 1.6; font-weight: 600; }
-.col.on .stack { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 4px 4px 0 0; }
-.xl { position: absolute; bottom: 2px; font-size: 10px; color: var(--ink-3); font-weight: 600; }
-.col.on .xl { color: var(--navy); font-weight: 800; }
-.best { position: absolute; top: -4px; white-space: nowrap; font-size: 10px; font-weight: 800; color: var(--red-deep); background: var(--red-soft); padding: 1px 5px; border-radius: 6px; }
-.legend { display: flex; gap: 12px; margin-top: 8px; font-size: 11px; font-weight: 600; color: var(--ink-2); }
-.legend span { display: flex; align-items: center; gap: 4px; }
-.legend i { width: 10px; height: 10px; border-radius: 3px; }
-.lw { background: #B8C8DC; } .lr { background: var(--blue); } .lp { background: var(--red); }
-.legend .muted { margin-left: auto; }
 
 .block { margin-top: 20px; }
 .block > .h2 { margin-bottom: 8px; }
