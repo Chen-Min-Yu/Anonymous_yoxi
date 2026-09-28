@@ -89,6 +89,13 @@ function draw() {
         interactive: !!ly.onClick, bubblingMouseEvents: false,
       }).addTo(group)
       if (ly.onClick) pg.on('click', () => ly.onClick())
+    } else if (ly.type === 'dot') {
+      const cm = L.circleMarker(ly.latlng, {
+        radius: ly.radius ?? 8, fillColor: ly.fill, fillOpacity: ly.fillOpacity ?? 0.85,
+        color: ly.stroke || '#fff', weight: ly.weight ?? 1.5, opacity: ly.strokeOpacity ?? 1,
+        interactive: !!ly.onClick, bubblingMouseEvents: false, pane: 'dotPane',
+      }).addTo(group)
+      if (ly.onClick) cm.on('click', () => ly.onClick())
     } else if (ly.type === 'marker') {
       const size = ly.size || [28, 28]
       const icon = L.divIcon({
@@ -119,6 +126,7 @@ onMounted(() => {
     maxBounds: [[25.03, 121.52], [25.10, 121.60]], maxBoundsViscosity: 1,
   })
   map.createPane('basePane').style.zIndex = 250
+  map.createPane('dotPane').style.zIndex = 320
   map.createPane('labelPane').style.zIndex = 350
   map.getPane('labelPane').style.pointerEvents = 'none'
   map.attributionControl.setPrefix(false).addAttribution('&copy; OpenStreetMap contributors')

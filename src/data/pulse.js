@@ -14,15 +14,43 @@ export const places = {
   dazhi: { name: '大直', ll: [25.0805, 121.5455] },
 }
 
-// 各格等車中位數的分級（循序色階：單一紅色系，淺到深）
+// 熱點門檻：該時段平均每天至少 2 筆叫車才算熱點，未達門檻的格子在地圖上呈灰色
+export const HOTSPOT_MIN = 2
+export const GREY = '#B6C0CE'
+
+// 等車中位數（循序色階：單一紅色系，淺到深）
 export const bins = [
-  { max: 5, color: '#FDECEB', label: '5 分內' },
-  { max: 6, color: '#F9C4C0', label: '5–6 分' },
-  { max: 7, color: '#F48C85', label: '6–7 分' },
-  { max: 8, color: '#F14A42', label: '7–8 分' },
-  { max: Infinity, color: '#B8261F', label: '8 分以上' },
+  { max: 5, color: '#FDD9D6', label: '5 分內' },
+  { max: 6, color: '#F9AEA9', label: '5–6 分' },
+  { max: 7, color: '#F4756C', label: '6–7 分' },
+  { max: 8, color: '#E03C34', label: '7–8 分' },
+  { max: Infinity, color: '#9E1F19', label: '8 分以上' },
 ]
 export const binOf = (w) => bins.find((b) => w < b.max)
+
+// 需求密度（循序色階：單一深藍色系，淺到深）
+export const demandBins = [
+  { max: 3, color: '#BBD3E8', label: '2–3 筆' },
+  { max: 4.5, color: '#7FA8CC', label: '3–4.5 筆' },
+  { max: 6, color: '#3D7CB0', label: '4.5–6 筆' },
+  { max: Infinity, color: '#0C4C80', label: '6 筆以上' },
+]
+export const demandBinOf = (d) => demandBins.find((b) => d < b.max)
+
+// 地圖兩種著色方式：需求密度、等車時間
+export const mapModes = [
+  {
+    id: 'demand', label: '需求熱度', unit: '每天叫車筆數',
+    bins: demandBins, colorOf: (c) => demandBinOf(c.per_day).color,
+  },
+  {
+    id: 'wait', label: '等車時間', unit: '等車中位數',
+    bins, colorOf: (c) => binOf(c.wait).color,
+  },
+]
+
+// 點的半徑隨需求密度成長（面積近似正比於筆數）
+export const dotRadius = (perDay) => 5 + Math.sqrt(perDay) * 3.4
 
 const fmt = (n) => n.toLocaleString('en-US')
 const g = real.pulse_grid

@@ -3,7 +3,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { go } from '../../store'
 import { routes, driver, split } from '../../data/scenario'
 import { meetPin, carPin } from '../../components/mapkit'
-import { slots, cellsFor, binOf } from '../../data/pulse'
+import { slots, cellsFor, demandBinOf, dotRadius, HOTSPOT_MIN } from '../../data/pulse'
 import RouteMap from '../../components/RouteMap.vue'
 import Icon from '../../components/Icon.vue'
 import TabBar from '../../components/TabBar.vue'
@@ -14,10 +14,13 @@ let timer
 onMounted(() => (timer = setTimeout(() => (incoming.value = true), 2200)))
 onBeforeUnmount(() => clearTimeout(timer))
 
-// 與乘客端城市脈動共用同一套需求預測：顏色越深代表等車越久、越缺車
-const demand = cellsFor(slots[0]).filter((c) => c.wait >= 6).map((c) => ({
-  type: 'poly', coords: c.poly, fill: binOf(c.wait).color, fillOpacity: 0.55, weight: 1,
-}))
+// 與乘客端城市脈動共用同一套需求資料：點越大越深，代表該區叫車越多
+const demand = cellsFor(slots[0])
+  .filter((c) => c.per_day >= HOTSPOT_MIN)
+  .map((c) => ({
+    type: 'dot', latlng: c.ll, radius: dotRadius(c.per_day),
+    fill: demandBinOf(c.per_day).color, fillOpacity: 0.75, weight: 1.5,
+  }))
 const layers = [
   ...demand,
   { type: 'line', coords: routes.soloB, color: '#F14A42', weight: 9, opacity: 0.25 },

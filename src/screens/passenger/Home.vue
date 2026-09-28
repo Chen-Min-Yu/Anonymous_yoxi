@@ -62,7 +62,7 @@ const week = [
         <section class="pulse card" @click="go('pulse')">
           <div class="pl-h">
             <span class="pl-t"><i class="live"></i> 城市脈動</span>
-            <span class="link">看熱力圖 <Icon name="chevron" :size="14" /></span>
+            <span class="link">看熱點地圖 <Icon name="chevron" :size="14" /></span>
           </div>
           <div class="pl-rows">
             <div v-for="a in pulseAreas" :key="a.name" class="pl-row">

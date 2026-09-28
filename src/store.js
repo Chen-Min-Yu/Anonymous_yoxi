@@ -4,8 +4,8 @@ export const flows = {
   passenger: [
     { id: 'lock', title: '通勤推播', desc: 'AI 偵測通勤模式，主動推播共乘邀請' },
     { id: 'home', title: '首頁', desc: '每日通勤預報、城市脈動、順路圈狀態' },
-    { id: 'pulse', title: '城市脈動', desc: '各區等車時間預測熱力圖與 AI 城市摘要' },
-    { id: 'forecast', title: '我的移動預報', desc: '最佳出發時間、共乘與預約比較' },
+    { id: 'pulse', title: '城市脈動', desc: '叫車熱點地圖，可切換需求熱度與等車時間' },
+    { id: 'forecast', title: '我的移動預報', desc: '出發時間、車型與大眾運輸方案比較' },
     { id: 'match', title: '媒合詳情', desc: '智慧集合點與共同／專屬路段' },
     { id: 'fare', title: '分攤試算', desc: '透明化逐段分攤與企業補助' },
     { id: 'meetup', title: '前往集合點', desc: '步行導航與司機到點倒數' },
