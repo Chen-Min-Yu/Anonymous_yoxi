@@ -16,18 +16,21 @@ const vehicles = [
   { k: 'xl', label: '六人座', icon: 'users', mult: 1.35 },
 ]
 const vehicle = ref('comfort')
-const poolPrice = computed(() => Math.round(me.pay * vehicles.find((v) => v.k === vehicle.value).mult))
+const mult = computed(() => vehicles.find((v) => v.k === vehicle.value).mult)
+// 三種方式都依車型倍率調整，取整到 $5
+const price = (n) => Math.round((n * mult.value) / 5) * 5
+const range = (lo, hi) => `$${price(lo)}–${price(hi)}`
 
 const options = computed(() => [
-  { k: 'pool', title: '順路共乘', time: '08:15 集合點上車', meta: `步行 ${me.walk.minutes} 分`, price: `$${poolPrice.value}`, tag: `省 $${me.solo - poolPrice.value}`, action: '查看媒合' },
-  { k: 'solo', title: '自己叫車', time: '08:15 叫車', meta: '中位等 5 分', price: '$200–300' },
-  { k: 'book', title: '預約叫車', time: '08:15 準時到門口', meta: '免等車', price: '$250–300' },
+  { k: 'pool', title: '順路共乘', time: '08:15 集合點上車', meta: `步行 ${me.walk.minutes} 分`, price: `$${price(me.pay)}`, tag: `省 $${price(me.solo) - price(me.pay)}`, action: '查看媒合' },
+  { k: 'solo', title: '自己叫車', time: '08:15 叫車', meta: '中位等 5 分', price: range(200, 300) },
+  { k: 'book', title: '預約叫車', time: '08:15 準時到門口', meta: '免等車', price: range(250, 300) },
 ])
 
 const upcoming = ref([
-  { t: '今天 18:20', title: '下班回民生社區', note: '雷陣雨，自己叫車預估等 14 分鐘', act: '預約回程順路車', done: false, warn: true },
-  { t: '週五 19:00', title: '南京復興聚餐', note: '你近 4 週有 3 次週五去這裡；18:40 出發可避開散場潮', act: '開啟出發提醒', done: false },
-  { t: '週日 06:30', title: '松山機場送機', note: '機場清晨供車少，建議前一晚預約', act: '預約叫車', done: false },
+  { t: '今天 18:20', title: '下班回民生社區', note: '雷陣雨，叫車約等 14 分', act: '預約回程順路車', done: false, warn: true },
+  { t: '週五 19:00', title: '南京復興聚餐', note: '18:40 出發可避開散場潮', act: '開啟出發提醒', done: false },
+  { t: '週日 06:30', title: '松山機場送機', note: '清晨車少，建議前一晚預約', act: '預約叫車', done: false },
 ])
 
 const pushes = ref([

@@ -51,6 +51,14 @@ const etaMin = Math.round(driver.approachSeconds / 60)
           </div>
         </div>
 
+        <div class="pickup">
+          <Icon name="pin" :size="20" />
+          <div class="pk-c">
+            <b>{{ places.meetup.name }}</b>
+            <span>{{ places.meetup.sub }}</span>
+          </div>
+        </div>
+
         <div class="facts">
           <div><Icon name="car" :size="18" /><b class="num">1.3 km</b><span>到集合點</span></div>
           <div><Icon name="clock" :size="18" /><b class="num">{{ etaMin }} 分</b><span>預估抵達</span></div>
@@ -82,7 +90,12 @@ const etaMin = Math.round(driver.approachSeconds / 60)
 .ring { position: relative; width: 54px; height: 54px; }
 .ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 17px; font-weight: 800; }
 
-.facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 16px; }
+.pickup { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: var(--bg); border-radius: 14px; padding: 12px 14px; color: var(--red); }
+.pk-c { display: flex; flex-direction: column; }
+.pk-c b { font-size: 15px; font-weight: 800; color: var(--navy); }
+.pk-c span { font-size: 12px; color: var(--ink-3); }
+
+.facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
 .facts div { background: var(--bg); border-radius: 12px; padding: 9px 10px; display: flex; flex-direction: column; color: var(--ink-2); }
 .facts b { font-size: 16px; font-weight: 800; color: var(--navy); margin-top: 3px; }
 .facts span { font-size: 11px; color: var(--ink-3); }
