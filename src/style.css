@@ -146,3 +146,6 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 .yx-fab.dark { background: var(--yx-navy); color: #fff; }
 /* 新功能的標記，讓評審一眼看出哪些是提案新增的 */
 .yx-new { display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 3px; background: var(--yx-red); color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+.hot-dot {
+  display: block; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(5, 17, 34, 0.3);
+}

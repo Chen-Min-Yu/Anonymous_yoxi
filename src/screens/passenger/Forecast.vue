@@ -18,8 +18,9 @@ const fastest = computed(() => Math.min(...options.value.map((o) => o.total)))
 const cheapest = computed(() => Math.min(...options.value.map((o) => o.fare)))
 
 const upcoming = ref([
-  { t: '今天 18:20', title: '下班回民生社區', note: '18 點最難叫車，預約回程可保留座位', act: '預約順路車', done: false, warn: true },
-  { t: '週五 19:00', title: '南京復興聚餐', note: '近 4 週有 3 次週五去這裡', act: '出發提醒', done: false },
+  { t: '今天 18:20', title: '下班回民生社區', note: '18 點最難叫車，預約可保留座位', act: '預約順路車', done: false, warn: true },
+  { t: '週五 19:00', title: '南京復興聚餐', note: '18:40 出發可避開散場潮', act: '出發提醒', done: false },
+  { t: '週日 06:30', title: '松山機場送機', note: '清晨車少，建議前一晚預約', act: '預約叫車', done: false },
 ])
 
 function tap(o) {

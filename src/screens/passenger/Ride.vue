@@ -28,15 +28,11 @@ function tick(now) {
 onMounted(() => setTimeout(() => (raf = requestAnimationFrame(tick)), 500))
 onBeforeUnmount(() => cancelAnimationFrame(raf))
 
+const TRIP_MIN = 13 // 08:15 出發，預估 13 分鐘後抵達你的下車點
 const traveled = computed(() => t.value * myEnd * split.totalMeters)
 const phase = computed(() => (traveled.value < segments[0].meters ? 0 : 1))
 const seg = computed(() => segments[phase.value])
-const myShare = computed(() => {
-  const d = traveled.value
-  const s0 = Math.min(d, segments[0].meters) * split.perMeter / 3
-  const s1 = Math.max(0, d - segments[0].meters) * split.perMeter / 2
-  return s0 + s1
-})
+const elapsedMin = computed(() => Math.round(TRIP_MIN * t.value))
 const arrived = computed(() => t.value >= 1)
 
 const stops = computed(() => [
@@ -69,12 +65,12 @@ const stops = computed(() => [
       <div class="inner">
         <div class="meter">
           <div>
-            <span class="k">你的分攤即時累計</span>
-            <b class="num">${{ myShare.toFixed(1) }}</b>
+            <span class="k">行程時間</span>
+            <b class="num">{{ elapsedMin }} 分鐘</b>
           </div>
           <div class="r">
             <span class="k">預估抵達</span>
-            <b class="num">08:{{ String(15 + Math.round(13 * t)).padStart(2, '0') }}</b>
+            <b class="num">08:{{ String(15 + TRIP_MIN).padStart(2, '0') }}</b>
           </div>
         </div>
 

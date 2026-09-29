@@ -20,11 +20,12 @@ export const GREY = '#B6C0CE'
 
 // 等車中位數（循序色階：單一紅色系，淺到深）
 export const bins = [
-  { max: 5, color: '#FDD9D6', label: '5 分內' },
-  { max: 6, color: '#F9AEA9', label: '5–6 分' },
-  { max: 7, color: '#F4756C', label: '6–7 分' },
-  { max: 8, color: '#E03C34', label: '7–8 分' },
-  { max: Infinity, color: '#9E1F19', label: '8 分以上' },
+  // 色階比原本加深，圓點在淺色底圖上才看得出來；mid 為該級距的代表值
+  { max: 5, mid: 4, color: '#FDD9D6', label: '5 分內' },
+  { max: 6, mid: 5.5, color: '#F9AEA9', label: '5–6 分' },
+  { max: 7, mid: 6.5, color: '#F4756C', label: '6–7 分' },
+  { max: 8, mid: 7.5, color: '#E03C34', label: '7–8 分' },
+  { max: Infinity, mid: 9, color: '#9E1F19', label: '8 分以上' },
 ]
 export const binOf = (w) => bins.find((b) => w < b.max)
 
@@ -51,6 +52,14 @@ export const mapModes = [
 
 // 點的半徑隨需求密度成長（面積近似正比於筆數）
 export const dotRadius = (perDay) => 5 + Math.sqrt(perDay) * 3.4
+
+// Llona 分支的另一種編碼：點的大小與深淺都代表等車時間。
+// 目前畫面改用上面的 dotRadius + mapModes，此函式保留供團隊比較後決定採用哪一種。
+const clamp01 = (n) => Math.max(0, Math.min(1, n))
+export function dotStyle(wait, min = 10, max = 34) {
+  const t = clamp01((wait - 4) / 6) // 4~10 分鐘落在 min~max px
+  return { size: Math.round(min + t * (max - min)), color: binOf(wait).color }
+}
 
 const fmt = (n) => n.toLocaleString('en-US')
 const g = real.pulse_grid

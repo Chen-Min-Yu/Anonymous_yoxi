@@ -1,8 +1,8 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
 import { back, go, toast } from '../../store'
-import { driver, split } from '../../data/scenario'
-import { lines, meetPin, dropPin, carPin, riders, routes, allRoute } from '../../components/mapkit'
+import { driver, places } from '../../data/scenario'
+import { lines, meetPin, carPin, routes } from '../../components/mapkit'
 import RouteMap from '../../components/RouteMap.vue'
 import Icon from '../../components/Icon.vue'
 
@@ -13,14 +13,11 @@ onMounted(() => (iv = setInterval(() => (left.value = Math.max(0, left.value - 1
 onBeforeUnmount(() => clearInterval(iv))
 const dash = computed(() => 2 * Math.PI * 22 * (left.value / TOTAL))
 
-const layers = [
-  lines.approach, lines.shared3, lines.shared2, lines.soloC,
-  meetPin('3 人'),
-  dropPin(riders[1], 1), dropPin(riders[0], 2), dropPin(riders[2], 3),
-  carPin(routes.approach[0]),
-]
-const fit = [...routes.approach, ...allRoute]
-const income = split.totalFare + driver.poolBonus
+// 接單前資訊揭露比照單人叫車：只看得到集合點位置、距離與預計抵達時間，
+// 看不到目的地、共乘里程與車資，避免司機挑單；用「共乘派單」標籤＋獎勵提示讓司機知道這是共乘單
+const layers = [lines.approach, meetPin('3 人'), carPin(routes.approach[0])]
+const fit = [...routes.approach, places.meetup.latlng]
+const etaMin = Math.round(driver.approachSeconds / 60)
 </script>
 
 <template>
@@ -31,7 +28,6 @@ const income = split.totalFare + driver.poolBonus
         <button class="fab" @click="back"><Icon name="back" /></button>
         <div class="legend">
           <span><i class="lg ap"></i>前往集合點</span>
-          <span><i class="lg sh"></i>共乘路段</span>
         </div>
       </div>
     </div>
@@ -42,6 +38,7 @@ const income = split.totalFare + driver.poolBonus
         <div class="s-top">
           <div>
             <span class="chip chip-red">共乘派單</span>
+            <span class="perk">接共乘單有額外獎勵</span>
             <div class="h2 title">一次接 3 位，只停 1 個點</div>
           </div>
           <div class="ring">
@@ -54,31 +51,17 @@ const income = split.totalFare + driver.poolBonus
           </div>
         </div>
 
-        <div class="money">
-          <div class="m-main">
-            <span>本單收入</span>
-            <b class="num">${{ income }}</b>
-          </div>
-          <div class="m-break">
-            <div><span>跳表車資（三人合計）</span><b class="num">${{ split.totalFare }}</b></div>
-            <div class="bonus"><span>共乘效率獎金</span><b class="num">+${{ driver.poolBonus }}</b></div>
-            <div class="vs"><span>同時段一般單平均</span><b class="num">${{ driver.soloEquivalent }}</b></div>
+        <div class="pickup">
+          <Icon name="pin" :size="20" />
+          <div class="pk-c">
+            <b>{{ places.meetup.name }}</b>
+            <span>{{ places.meetup.sub }}</span>
           </div>
         </div>
 
         <div class="facts">
           <div><Icon name="car" :size="18" /><b class="num">1.3 km</b><span>到集合點</span></div>
-          <div><Icon name="route" :size="18" /><b class="num">7.3 km</b><span>共乘里程</span></div>
-          <div class="good"><Icon name="target" :size="18" /><b class="num">-3.4 km</b><span>比逐一接送少繞</span></div>
-        </div>
-
-        <div class="drops">
-          <span class="d-l">下車順序</span>
-          <span class="d-i"><i>1</i>洲子街</span>
-          <Icon name="chevron" :size="12" class="muted" />
-          <span class="d-i"><i>2</i>瑞光路</span>
-          <Icon name="chevron" :size="12" class="muted" />
-          <span class="d-i"><i>3</i>港墘路</span>
+          <div><Icon name="clock" :size="18" /><b class="num">{{ etaMin }} 分</b><span>預估抵達</span></div>
         </div>
 
         <div class="acts">
@@ -98,36 +81,24 @@ const income = split.totalFare + driver.poolBonus
 .legend span { display: flex; align-items: center; gap: 5px; }
 .lg { width: 16px; height: 4px; border-radius: 2px; }
 .lg.ap { background: repeating-linear-gradient(90deg, var(--steel) 0 4px, transparent 4px 7px); }
-.lg.sh { background: var(--blue); }
 
 .sheet { margin-top: -24px; flex-shrink: 0; }
 .inner { padding: 6px 18px 30px; }
 .s-top { display: flex; justify-content: space-between; align-items: center; }
+.perk { display: inline-block; margin-left: 6px; font-size: 12px; font-weight: 700; color: var(--red-deep); }
 .title { font-size: 19px; font-weight: 900; margin-top: 6px; }
 .ring { position: relative; width: 54px; height: 54px; }
 .ring b { position: absolute; inset: 0; display: grid; place-items: center; font-size: 17px; font-weight: 800; }
 
-.money { display: flex; gap: 12px; margin-top: 12px; background: var(--navy); color: #fff; border-radius: 16px; padding: 12px 14px; }
-.m-main { display: flex; flex-direction: column; justify-content: center; padding-right: 12px; border-right: 1px solid rgba(255,255,255,.15); }
-.m-main span { font-size: 12px; opacity: .7; }
-.m-main b { font-size: 34px; font-weight: 800; line-height: 1.05; }
-.m-break { flex: 1; display: flex; flex-direction: column; gap: 3px; font-size: 12px; }
-.m-break div { display: flex; justify-content: space-between; }
-.m-break span { opacity: .78; }
-.m-break .bonus b { color: #ff8f89; }
-.m-break .vs { border-top: 1px dashed rgba(255,255,255,.2); padding-top: 3px; opacity: .75; }
+.pickup { display: flex; align-items: center; gap: 10px; margin-top: 14px; background: var(--bg); border-radius: 14px; padding: 12px 14px; color: var(--red); }
+.pk-c { display: flex; flex-direction: column; }
+.pk-c b { font-size: 15px; font-weight: 800; color: var(--navy); }
+.pk-c span { font-size: 12px; color: var(--ink-3); }
 
-.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.facts { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
 .facts div { background: var(--bg); border-radius: 12px; padding: 9px 10px; display: flex; flex-direction: column; color: var(--ink-2); }
 .facts b { font-size: 16px; font-weight: 800; color: var(--navy); margin-top: 3px; }
 .facts span { font-size: 11px; color: var(--ink-3); }
-.facts .good { background: var(--blue-soft); color: var(--blue); }
-.facts .good b { color: var(--blue); }
-
-.drops { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13px; font-weight: 600; }
-.d-l { font-size: 12px; color: var(--ink-3); margin-right: 2px; }
-.d-i { display: flex; align-items: center; gap: 4px; }
-.d-i i { width: 18px; height: 18px; border-radius: 5px; background: var(--navy); color: #fff; font-style: normal; font-size: 11px; display: grid; place-items: center; font-family: var(--num); }
 
 .acts { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; margin-top: 14px; }
 </style>

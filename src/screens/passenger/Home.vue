@@ -2,14 +2,13 @@
 import { go, toast } from '../../store'
 import { me, split } from '../../data/scenario'
 import { riderColor } from '../../components/mapkit'
-import { areaStats, corridor } from '../../data/pulse'
+import { areaStats } from '../../data/pulse'
 import Icon from '../../components/Icon.vue'
 import YoxiLogo from '../../components/YoxiLogo.vue'
 import TabBar from '../../components/TabBar.vue'
 
 const mates = split.riders.filter((r) => !r.me)
 const pulseAreas = areaStats('now').filter((x) => ['minsheng', 'nanjing', 'neihu'].includes(x.k))
-const at815 = corridor.curve.find((d) => d.t === '08:15')
 const week = [
   { d: '一', pool: true, amt: 92 }, { d: '二', pool: true, amt: 0, today: true },
   { d: '三', pool: false }, { d: '四', pool: false }, { d: '五', pool: false },
@@ -39,23 +38,22 @@ const week = [
           <span class="chip chip-line"><Icon name="clock" :size="13" />預約</span>
         </button>
 
-        <!-- AI 通勤預報 -->
+        <!-- AI 通勤預報：只給結論，不堆數字 -->
         <section class="forecast" @click="go('forecast')">
           <div class="fc-top">
             <span class="ai"><Icon name="sparkle" :size="14" /> AI 通勤預報</span>
-            <span class="fc-date">週二 早班 · 查看完整預報 <Icon name="chevron" :size="12" /></span>
+            <span class="fc-date">完整預報 <Icon name="chevron" :size="12" /></span>
           </div>
           <div class="fc-main">
             <div>
-              <div class="fc-label">你的出發時間</div>
+              <div class="fc-label">建議出發</div>
               <div class="fc-time num">08:15</div>
             </div>
-            <div class="fc-cmp">
-              <div class="row"><span>自己叫車</span><b class="num">等 {{ Math.round(at815.wait) }} 分 · ${{ me.solo }}</b></div>
-              <div class="row hl"><span>順路共乘</span><b class="num">步行 {{ me.walk.minutes }} 分 · ${{ me.pay }}</b></div>
+            <div class="fc-tip">
+              <Icon name="users" :size="14" />
+              <span>順路共乘走 {{ me.walk.minutes }} 分到集合點，比自己叫車更快上車</span>
             </div>
           </div>
-          <p class="fc-note">依近 90 天這條走廊的 yoxi 行程：08:15 自己叫車中位等 {{ at815.wait }} 分、車程 {{ at815.ride }} 分；共乘多花約 3 分鐘，車資少一半以上。</p>
         </section>
 
         <!-- 城市脈動 -->
@@ -158,14 +156,11 @@ const week = [
 .fc-top { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 1; }
 .ai { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,.12); padding: 4px 9px; border-radius: 99px; }
 .fc-date { font-size: 12px; opacity: .7; }
-.fc-main { display: flex; gap: 14px; align-items: flex-end; margin-top: 12px; position: relative; z-index: 1; }
+.fc-main { display: flex; gap: 14px; align-items: center; margin-top: 12px; position: relative; z-index: 1; }
 .fc-label { font-size: 12px; opacity: .7; }
 .fc-time { font-size: 40px; font-weight: 800; line-height: 1.05; }
-.fc-cmp { flex: 1; display: flex; flex-direction: column; gap: 5px; }
-.row { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 10px; border-radius: 9px; background: rgba(255,255,255,.08); }
-.row b { font-weight: 700; }
-.row.hl { background: var(--red); }
-.fc-note { font-size: 12px; line-height: 1.6; opacity: .78; margin-top: 12px; position: relative; z-index: 1; }
+.fc-tip { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 13px; line-height: 1.5; background: rgba(255,255,255,.1); border-radius: 12px; padding: 10px 12px; }
+.fc-tip svg { flex-shrink: 0; opacity: .85; }
 
 .forecast { cursor: pointer; }
 .fc-date { display: inline-flex; align-items: center; gap: 2px; }

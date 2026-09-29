@@ -15,9 +15,6 @@ const layers = [
 ]
 const fit = [...routes.shared3, ...routes.soloC_full]
 
-const months = [
-  { m: '6月', v: 3 }, { m: '7月', v: 7 }, { m: '8月', v: 11 }, { m: '9月', v: 14 },
-]
 const spots = [
   { name: '民生敦化路口', note: '常設集合點 · 你用過 23 次', fixed: true, walk: 6 },
   { name: '捷運中山國中站 2 號出口', note: '雨天替代點 · 8 次', walk: 9 },
@@ -59,8 +56,8 @@ const rewards = [
 
         <section class="insight">
           <div class="ins-h"><Icon name="sparkle" :size="15" /> AI 通勤洞察</div>
-          <p>你週三平均比其他天晚 12 分鐘出門。週三改加入 <b>08:25 班</b>，同樣有 3 位固定夥伴，不必趕路。</p>
-          <button @click="toast('已將週三改為 08:25 班')">週三改搭 08:25</button>
+          <p><b>週三建議改搭 08:25 班</b>，一樣有 3 位熟識夥伴同車。</p>
+          <button @click="toast('已將週三改為 08:25 班')">套用</button>
         </section>
 
         <section class="block">
@@ -70,13 +67,6 @@ const rewards = [
               <div class="rp-big"><span>本月省下</span><b class="num">$1,974</b></div>
               <div class="rp-row"><span>減碳</span><b class="num">6.9 kg</b></div>
               <div class="rp-row"><span>相當於</span><b>0.6 棵樹一年吸收量</b></div>
-            </div>
-            <div class="bars">
-              <div v-for="x in months" :key="x.m" class="bar-col">
-                <span class="bv num">{{ x.v }}</span>
-                <span class="bar" :style="{ height: x.v * 6 + 'px' }" :class="{ now: x.m === '9月' }"></span>
-                <span class="bm">{{ x.m }}</span>
-              </div>
             </div>
           </div>
         </section>
@@ -146,12 +136,6 @@ const rewards = [
 .rp-big b { font-size: 28px; font-weight: 800; color: var(--red); line-height: 1.1; }
 .rp-row { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-2); padding-top: 4px; border-top: 1px solid var(--line); }
 .rp-row b { color: var(--navy); }
-.bars { display: flex; align-items: flex-end; gap: 10px; padding-left: 10px; border-left: 1px solid var(--line); }
-.bar-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.bv { font-size: 11px; font-weight: 700; color: var(--ink-2); }
-.bar { width: 18px; border-radius: 5px 5px 2px 2px; background: var(--mist); }
-.bar.now { background: var(--blue); }
-.bm { font-size: 11px; color: var(--ink-3); }
 
 .spots { padding: 2px 14px; }
 .spot { display: flex; align-items: center; gap: 12px; padding: 11px 0; }

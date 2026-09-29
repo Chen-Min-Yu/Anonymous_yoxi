@@ -20,6 +20,8 @@ function pickSlot(id) {
 const cells = computed(() => cellsFor(slot.value))
 const hotCount = computed(() => cells.value.filter((c) => c.per_day >= HOTSPOT_MIN).length)
 
+// 需求熱點不再用整格色塊表示（色弱不易辨識、格線也太搶眼），
+// 改為灰階底格 + 點的大小／深淺雙重編碼：點越大越深＝等車越久
 const layers = computed(() => {
   // 熱點以彩色圓點呈現（點越大＝叫車越多），非熱點格子一律灰色小點
   const dots = cells.value
@@ -36,12 +38,24 @@ const layers = computed(() => {
         onClick: () => (picked.value = c),
       }
     })
+  // 幾乎透明的六角格，只是為了讓小點也有夠大的點擊範圍（取自 Llona 分支）
+  const hexes = cells.value.map((c) => ({
+    type: 'poly', coords: c.poly, fill: '#0C4C80',
+    fillOpacity: picked.value?.id === c.id ? 0.1 : 0.025,
+    stroke: picked.value?.id === c.id ? '#051122' : '#fff',
+    weight: picked.value?.id === c.id ? 2 : 1,
+    onClick: () => (picked.value = c),
+  }))
   const labels = areaList.map((k) => ({
     type: 'marker', latlng: [places[k].ll[0] + (labelShift[k]?.[0] || 0), places[k].ll[1] + (labelShift[k]?.[1] || 0)], size: [0, 0], z: 300,
     html: `<span class="pulse-lab">${places[k].name}</span>`,
   }))
-  return [...dots, ...labels]
+  return [...hexes, ...dots, ...labels]
 })
+function legendDot(b) {
+  const d = dotStyle(b.mid, 6, 15)
+  return { width: d.size + 'px', height: d.size + 'px', background: d.color }
+}
 const fit = [[25.048, 121.541], [25.083, 121.581]]
 const labelShift = { arena: [0.0015, 0.0048], nanjing: [0.0028, -0.0018] }
 

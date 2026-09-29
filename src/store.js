@@ -17,7 +17,7 @@ export const flows = {
   ],
   driver: [
     { id: 'd-home', title: '司機首頁', desc: '熱門共乘走廊與效率獎金' },
-    { id: 'd-offer', title: '共乘派單', desc: '繞路成本與收入一次看清楚' },
+    { id: 'd-offer', title: '共乘派單', desc: '比照單人叫車，接單前只看集合點與預估時間' },
     { id: 'd-trip', title: '共乘行程', desc: '集合點接人、依序送達' },
     { id: 'd-earn', title: '收入分析', desc: '共乘單與一般單時薪比較' },
   ],
