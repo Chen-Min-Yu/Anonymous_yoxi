@@ -21,15 +21,24 @@ import DHome from './screens/driver/DriverHome.vue'
 import DOffer from './screens/driver/DriverOffer.vue'
 import DTrip from './screens/driver/DriverTrip.vue'
 import DEarn from './screens/driver/DriverEarn.vue'
+import OHome from './screens/origin/OriginHome.vue'
+import ODest from './screens/origin/OriginDest.vue'
+import OBook from './screens/origin/OriginBook.vue'
+import OTrips from './screens/origin/OriginTrips.vue'
+import MHome from './screens/merged/MergedHome.vue'
+import MBook from './screens/merged/MergedBook.vue'
+import MPool from './screens/merged/MergedPool.vue'
 
 const screens = {
   lock: Lock, home: Home, match: Match, fare: Fare, meetup: Meetup, ride: Ride,
   done: Done, circle: Circle, enterprise: Enterprise, pulse: Pulse, forecast: Forecast, atlas: Atlas,
   'd-home': DHome, 'd-offer': DOffer, 'd-trip': DTrip, 'd-earn': DEarn,
+  'o-home': OHome, 'o-dest': ODest, 'o-book': OBook, 'o-trips': OTrips,
+  'm-home': MHome, 'm-book': MBook, 'm-pool': MPool,
 }
 
 const current = computed(() => screens[store.screen])
-const darkStatus = computed(() => ['lock', 'd-home', 'd-earn', 'done'].includes(store.screen))
+const darkStatus = computed(() => ['lock', 'd-home', 'd-earn', 'done', 'o-trips'].includes(store.screen))
 const solidStatus = computed(() => ['home', 'pulse', 'forecast', 'fare', 'circle', 'atlas', 'enterprise'].includes(store.screen))
 const presenting = ref(false)
 const list = computed(() => flows[store.role])
@@ -65,7 +74,20 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         <button :class="{ on: store.role === 'driver' }" @click="switchRole('driver')">
           <Icon name="car" :size="16" /> 司機端
         </button>
+        <button :class="{ on: store.role === 'origin' }" @click="switchRole('origin')">
+          <Icon name="phone" :size="16" /> yoxi 現況
+        </button>
+        <button :class="{ on: store.role === 'merged' }" @click="switchRole('merged')">
+          <Icon name="sparkle" :size="16" /> 整合版
+        </button>
       </div>
+      <p v-if="store.role === 'origin'" class="origin-note">
+        依 2026/09/29 yoxi App 實機錄影還原的現行預約叫車流程，作為提案前後對照用。
+      </p>
+      <p v-else-if="store.role === 'merged'" class="origin-note">
+        把城市脈動與順路圈接進 yoxi 現行介面，沿用它的版面、配色與叫車動線；標
+        <span class="yx-new">新</span> 的就是提案新增的部分。
+      </p>
 
       <ol class="flow">
         <li v-for="(s, i) in list" :key="s.id" :class="{ on: s.id === store.screen, past: i < idx }" @click="go(s.id)">
@@ -122,10 +144,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .brand-sub span { font-size: 12px; color: var(--ink-3); font-weight: 500; }
 .pitch { margin: 18px 0 22px; font-size: 14px; line-height: 1.8; color: var(--ink-2); }
 
-.seg { display: grid; grid-template-columns: 1fr 1fr; background: #fff; border-radius: 14px; padding: 4px; box-shadow: var(--shadow-card); }
-.seg button { height: 40px; border-radius: 10px; font-size: 14px; font-weight: 700; color: var(--ink-3); display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .2s; }
+.seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; background: #fff; border-radius: 14px; padding: 4px; box-shadow: var(--shadow-card); }
+.seg button { height: 40px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--ink-3); display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .2s; }
 .seg button.on { background: var(--navy); color: #fff; }
 
+.origin-note { font-size: 12px; line-height: 1.9; color: var(--ink-3); margin: 10px 2px 0; }
+.origin-note .yx-new { background: #D8303C; color: #fff; padding: 1px 5px; border-radius: 3px; font-size: 10px; font-weight: 700; }
 .flow { list-style: none; margin: 18px 0 0; }
 .flow li { display: grid; grid-template-columns: 34px 1fr; gap: 8px; padding: 7px 12px; border-radius: 12px; cursor: pointer; transition: background .15s; position: relative; }
 .flow li:hover { background: rgba(255,255,255,.6); }

@@ -21,6 +21,17 @@ export const flows = {
     { id: 'd-trip', title: '共乘行程', desc: '集合點接人、依序送達' },
     { id: 'd-earn', title: '收入分析', desc: '共乘單與一般單時薪比較' },
   ],
+  merged: [
+    { id: 'm-home', title: '首頁', desc: 'yoxi 原版面板 + 城市脈動列 + 順路圈邀請' },
+    { id: 'm-book', title: '叫車', desc: '原本兩個分頁旁新增「順路共乘」' },
+    { id: 'm-pool', title: '順路共乘詳情', desc: '集合點理由與逐段分攤' },
+  ],
+  origin: [
+    { id: 'o-home', title: '首頁', desc: '地圖、上下車點輸入、活動橫幅、側選單' },
+    { id: 'o-dest', title: '設定下車地點', desc: '搜尋或在地圖上選點' },
+    { id: 'o-book', title: '叫車', desc: '立即叫車／預約切換、車種、付款、點數' },
+    { id: 'o-trips', title: '行程紀錄', desc: '預約叫車分頁與空狀態' },
+  ],
 }
 
 export const store = reactive({
@@ -36,7 +47,7 @@ export function go(id, opts = {}) {
   store.direction = opts.back ? 'back' : 'forward'
   if (!opts.back && !opts.replace) store.history.push(store.screen)
   store.screen = id
-  const role = id.startsWith('d-') ? 'driver' : 'passenger'
+  const role = id.startsWith('d-') ? 'driver' : id.startsWith('o-') ? 'origin' : id.startsWith('m-') ? 'merged' : 'passenger'
   store.role = role
 }
 

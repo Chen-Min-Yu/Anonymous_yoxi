@@ -48,9 +48,9 @@ async function drawBase(m, showLabels = true) {
     L.polyline(data.major, { color: '#C9D3E0', renderer, interactive: false }),
     L.polyline(data.major, { color: '#FFFFFF', renderer, interactive: false }),
   ]
-  const widths = { 13: [0.6, 2.2, 1.4, 4, 3], 14: [1, 3.2, 2.2, 5.5, 4], 15: [1.8, 5, 3.6, 8, 6.2], 16: [3, 7.5, 5.8, 11, 9] }
+  const widths = { 13: [0.6, 2.2, 1.4, 4, 3], 14: [1, 3.2, 2.2, 5.5, 4], 15: [1.8, 5, 3.6, 8, 6.2], 16: [3, 7.5, 5.8, 11, 9], 17: [5, 12, 9.5, 17, 14], 18: [7, 16, 13, 22, 18] }
   const restyle = () => {
-    const w = widths[Math.max(13, Math.min(16, Math.round(m.getZoom())))]
+    const w = widths[Math.max(13, Math.min(18, Math.round(m.getZoom())))]
     roads.forEach((r, i) => r.setStyle({ weight: w[i], lineCap: 'round', lineJoin: 'round' }))
   }
   roads.forEach((r) => r.addTo(m))
@@ -122,8 +122,8 @@ onMounted(() => {
     zoomControl: false, attributionControl: true,
     dragging: props.interactive, scrollWheelZoom: props.interactive, doubleClickZoom: props.interactive,
     touchZoom: props.interactive,
-    minZoom: 12, maxZoom: 16, zoomSnap: 0.25,
-    maxBounds: [[25.03, 121.52], [25.10, 121.60]], maxBoundsViscosity: 1,
+    minZoom: 12, maxZoom: 17.5, zoomSnap: 0.25,
+    maxBounds: [[25.018, 121.515], [25.10, 121.60]], maxBoundsViscosity: 1,
   })
   map.createPane('basePane').style.zIndex = 250
   map.createPane('dotPane').style.zIndex = 320
