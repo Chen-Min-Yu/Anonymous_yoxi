@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { go, toast } from '../../store'
-import { slots, cellsFor, bins, binOf, places, areaList, areaStats, real } from '../../data/pulse'
+import { slots, cellsFor, bins, dotStyle, places, areaList, areaStats, real } from '../../data/pulse'
 import RouteMap from '../../components/RouteMap.vue'
 import Icon from '../../components/Icon.vue'
 import TabBar from '../../components/TabBar.vue'
@@ -16,20 +16,33 @@ function pickSlot(id) {
 }
 
 
+// 需求熱點不再用整格色塊表示（色弱不易辨識、格線也太搶眼），
+// 改為灰階底格 + 點的大小／深淺雙重編碼：點越大越深＝等車越久
 const layers = computed(() => {
   const cs = cellsFor(slot.value)
   const hexes = cs.map((c) => ({
-    type: 'poly', coords: c.poly, fill: binOf(c.wait).color,
-    fillOpacity: picked.value?.id === c.id ? 0.95 : 0.72,
-    stroke: picked.value?.id === c.id ? '#051122' : '#fff', weight: picked.value?.id === c.id ? 2.5 : 1.2,
+    type: 'poly', coords: c.poly, fill: '#0C4C80',
+    fillOpacity: picked.value?.id === c.id ? 0.1 : 0.025,
+    stroke: picked.value?.id === c.id ? '#051122' : '#fff', weight: picked.value?.id === c.id ? 2.5 : 1,
     onClick: () => (picked.value = c),
   }))
+  const dots = cs.map((c) => {
+    const d = dotStyle(c.wait)
+    return {
+      type: 'marker', latlng: c.ll, size: [d.size, d.size], z: 200,
+      html: `<span class="hot-dot" style="width:${d.size}px;height:${d.size}px;background:${d.color}"></span>`,
+    }
+  })
   const labels = areaList.map((k) => ({
     type: 'marker', latlng: [places[k].ll[0] + (labelShift[k]?.[0] || 0), places[k].ll[1] + (labelShift[k]?.[1] || 0)], size: [0, 0], z: 300,
     html: `<span class="pulse-lab">${places[k].name}</span>`,
   }))
-  return [...hexes, ...labels]
+  return [...hexes, ...dots, ...labels]
 })
+function legendDot(b) {
+  const d = dotStyle(b.mid, 6, 15)
+  return { width: d.size + 'px', height: d.size + 'px', background: d.color }
+}
 const fit = [[25.048, 121.541], [25.083, 121.581]]
 const labelShift = { arena: [-0.0022, 0.002], nanjing: [0.0022, 0.0035] }
 
@@ -78,8 +91,8 @@ function followTip() {
         </Transition>
 
         <div class="legend">
-          <span class="lg-t">等車中位數</span>
-          <span v-for="b in bins" :key="b.label" class="lg-i"><i :style="{ background: b.color }"></i>{{ b.label }}</span>
+          <span class="lg-t">等車熱點</span>
+          <span v-for="b in bins" :key="b.label" class="lg-i"><i class="lg-dot" :style="legendDot(b)"></i>{{ b.label }}</span>
         </div>
       </div>
 
@@ -146,8 +159,8 @@ function followTip() {
 
 .legend { position: absolute; left: 8px; right: 8px; bottom: 8px; z-index: 600; background: rgba(255,255,255,.94); border-radius: 10px; padding: 6px 8px; display: flex; flex-wrap: wrap; gap: 3px 8px; align-items: center; font-size: 10px; color: var(--ink-2); font-weight: 600; }
 .lg-t { color: var(--navy); font-weight: 800; margin-right: 2px; }
-.lg-i { display: inline-flex; align-items: center; gap: 3px; }
-.lg-i i { width: 10px; height: 10px; border-radius: 3px; border: 1px solid rgba(5,17,34,.08); }
+.lg-i { display: inline-flex; align-items: center; gap: 4px; }
+.lg-dot { display: inline-block; flex-shrink: 0; border-radius: 50%; box-shadow: 0 0 0 1px rgba(5,17,34,.1); }
 
 .ai { padding: 14px 16px; margin-top: 14px; }
 .ai-h { display: flex; justify-content: space-between; align-items: center; }

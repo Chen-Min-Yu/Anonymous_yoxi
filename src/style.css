@@ -125,3 +125,6 @@ button { font: inherit; color: inherit; border: none; background: none; cursor: 
 .base-label.area { color: #8a99ad; font-size: 12px; }
 .base-label.road { color: #5d6e85; font-size: 10px; }
 .base-label.v { writing-mode: vertical-rl; }
+.hot-dot {
+  display: block; border-radius: 50%; box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(5, 17, 34, 0.3);
+}

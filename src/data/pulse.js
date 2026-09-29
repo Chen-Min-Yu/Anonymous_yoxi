@@ -16,13 +16,21 @@ export const places = {
 
 // 各格等車中位數的分級（循序色階：單一紅色系，淺到深）
 export const bins = [
-  { max: 5, color: '#FDECEB', label: '5 分內' },
-  { max: 6, color: '#F9C4C0', label: '5–6 分' },
-  { max: 7, color: '#F48C85', label: '6–7 分' },
-  { max: 8, color: '#F14A42', label: '7–8 分' },
-  { max: Infinity, color: '#B8261F', label: '8 分以上' },
+  { max: 5, mid: 4, color: '#FDECEB', label: '5 分內' },
+  { max: 6, mid: 5.5, color: '#F9C4C0', label: '5–6 分' },
+  { max: 7, mid: 6.5, color: '#F48C85', label: '6–7 分' },
+  { max: 8, mid: 7.5, color: '#F14A42', label: '7–8 分' },
+  { max: Infinity, mid: 9, color: '#B8261F', label: '8 分以上' },
 ]
 export const binOf = (w) => bins.find((b) => w < b.max)
+
+// 需求熱點改用「點的大小＋顏色深淺」雙重編碼，取代整格色塊：
+// 等車越久，點越大、顏色越深；非熱點不畫點，直接露出灰階底圖
+const clamp01 = (n) => Math.max(0, Math.min(1, n))
+export function dotStyle(wait, min = 10, max = 34) {
+  const t = clamp01((wait - 4) / 6) // 4~10 分鐘落在 min~max px
+  return { size: Math.round(min + t * (max - min)), color: binOf(wait).color }
+}
 
 const fmt = (n) => n.toLocaleString('en-US')
 const g = real.pulse_grid

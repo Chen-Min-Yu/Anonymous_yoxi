@@ -5,11 +5,8 @@ import Icon from '../../components/Icon.vue'
 import TabBar from '../../components/TabBar.vue'
 
 const income = split.totalFare + driver.poolBonus
-const hourly = [
-  { k: '一般單', v: 690, note: '含空車找客時間' },
-  { k: '共乘單', v: 860, note: '集合點接人、走廊內連續派單' },
-]
-const max = 900
+const CO2_SAVED_KG = 42
+const FUEL_SAVED_L = Math.round(CO2_SAVED_KG / 2.3) // 一般汽油車約 2.3 kg CO2 / 公升，估算省下的油錢公升數
 const trips = [
   { t: '08:12', kind: '共乘', who: '3 人 · 民生社區到內湖', amt: income, pool: true },
   { t: '07:31', kind: '共乘', who: '2 人 · 松山到南港軟體園區', amt: 215, pool: true },
@@ -41,22 +38,8 @@ const trips = [
           <div class="steps">
             <span v-for="i in 5" :key="i" :class="{ on: i <= 4 }"></span>
           </div>
-          <p class="sub">今天再完成 1 趟共乘單，加發 <b style="color: var(--red)">$150</b>。系統會優先派發你所在走廊的共乘單。</p>
+          <p class="sub">今天再完成 1 趟共乘單，加發 <b style="color: var(--red)">$150</b>。系統會優先派發你所在地區的共乘單。</p>
         </div>
-
-        <section class="block">
-          <div class="h2">平均時薪比較</div>
-          <p class="sub">近 30 天，同一走廊、同一時段（07:00–10:00）</p>
-          <div class="chart card">
-            <div v-for="h in hourly" :key="h.k" class="hrow">
-              <span class="hk">{{ h.k }}</span>
-              <span class="hbar"><i :class="{ pool: h.k === '共乘單' }" :style="{ width: (h.v / max) * 100 + '%' }"></i></span>
-              <b class="num">${{ h.v }}</b>
-              <small>{{ h.note }}</small>
-            </div>
-            <div class="delta"><Icon name="chart" :size="15" /> 共乘單時薪高出 <b class="num">24.6%</b></div>
-          </div>
-        </section>
 
         <section class="block">
           <div class="h2">今日行程</div>
@@ -73,7 +56,7 @@ const trips = [
         <div class="green card">
           <span class="g-ic"><Icon name="leaf" :size="20" /></span>
           <div>
-            <b>本月你的共乘單減少 42 kg 碳排</b>
+            <b>本月共乘單減少 {{ CO2_SAVED_KG }} kg 碳排，省下約 {{ FUEL_SAVED_L }} 公升油錢</b>
             <small>yoxi 綠色車隊認證司機，享保養合作廠優惠</small>
           </div>
         </div>
@@ -105,16 +88,6 @@ const trips = [
 
 .block { margin-top: 20px; }
 .block > .sub { font-size: 12px; margin: 2px 0 10px; }
-.chart { padding: 14px 16px; }
-.hrow { display: grid; grid-template-columns: 48px 1fr 52px; grid-template-rows: auto auto; align-items: center; column-gap: 10px; margin-bottom: 12px; }
-.hk { font-size: 13px; font-weight: 700; }
-.hbar { height: 22px; background: var(--bg); border-radius: 7px; overflow: hidden; }
-.hbar i { display: block; height: 100%; background: var(--steel); border-radius: 7px; }
-.hbar i.pool { background: var(--red); }
-.hrow b { font-size: 16px; font-weight: 800; text-align: right; }
-.hrow small { grid-column: 2 / 4; font-size: 11px; color: var(--ink-3); margin-top: 3px; }
-.delta { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--blue); background: var(--blue-soft); border-radius: 10px; padding: 8px 10px; font-weight: 600; }
-.delta b { font-weight: 800; }
 
 .trips { padding: 2px 14px; }
 .trip { display: flex; align-items: center; gap: 8px; padding: 11px 0; }

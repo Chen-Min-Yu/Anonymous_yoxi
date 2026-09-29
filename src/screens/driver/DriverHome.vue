@@ -1,9 +1,9 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { go } from '../../store'
-import { routes, driver, split } from '../../data/scenario'
+import { routes, driver } from '../../data/scenario'
 import { meetPin, carPin } from '../../components/mapkit'
-import { slots, cellsFor, binOf } from '../../data/pulse'
+import { slots, cellsFor, dotStyle } from '../../data/pulse'
 import RouteMap from '../../components/RouteMap.vue'
 import Icon from '../../components/Icon.vue'
 import TabBar from '../../components/TabBar.vue'
@@ -14,10 +14,14 @@ let timer
 onMounted(() => (timer = setTimeout(() => (incoming.value = true), 2200)))
 onBeforeUnmount(() => clearTimeout(timer))
 
-// 與乘客端城市脈動共用同一套需求預測：顏色越深代表等車越久、越缺車
-const demand = cellsFor(slots[0]).filter((c) => c.wait >= 6).map((c) => ({
-  type: 'poly', coords: c.poly, fill: binOf(c.wait).color, fillOpacity: 0.55, weight: 1,
-}))
+// 與乘客端城市脈動共用同一套需求預測：非熱點不畫，只用點的大小／深淺標出等車熱點，其餘維持灰階底圖
+const demand = cellsFor(slots[0]).filter((c) => c.wait >= 6).map((c) => {
+  const d = dotStyle(c.wait)
+  return {
+    type: 'marker', latlng: c.ll, size: [d.size, d.size], z: 150,
+    html: `<span class="hot-dot" style="width:${d.size}px;height:${d.size}px;background:${d.color}"></span>`,
+  }
+})
 const layers = [
   ...demand,
   { type: 'line', coords: routes.soloB, color: '#F14A42', weight: 9, opacity: 0.25 },
@@ -67,15 +71,11 @@ const fit = [...routes.approach, ...routes.shared3]
 
       <Transition name="rise">
         <button v-if="incoming && online" class="offer" @click="go('d-offer')">
-          <span class="of-badge">共乘派單</span>
+          <span class="of-badge">共乘派單 · 有額外獎勵</span>
           <div class="of-main">
             <div>
               <b>3 位乘客 · 1 個集合點</b>
-              <small>民生敦化路口 → 內湖科學園區</small>
-            </div>
-            <div class="of-p">
-              <b class="num">${{ split.totalFare + driver.poolBonus }}</b>
-              <small>含獎金</small>
+              <small>民生敦化路口上車</small>
             </div>
           </div>
           <span class="of-go">查看派單 <Icon name="arrow" :size="16" /></span>
@@ -115,11 +115,9 @@ const fit = [...routes.approach, ...routes.shared3]
 .offer { position: absolute; left: 12px; right: 12px; bottom: 14px; z-index: 600; background: #fff; border-radius: 20px; padding: 14px; text-align: left; box-shadow: 0 20px 44px -10px rgba(5,17,34,.45); border: 2px solid var(--red); }
 .of-badge { display: inline-block; font-size: 11px; font-weight: 800; color: #fff; background: var(--red); padding: 3px 9px; border-radius: 99px; animation: blink 1.2s infinite; }
 @keyframes blink { 50% { opacity: .6; } }
-.of-main { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; }
+.of-main { margin-top: 8px; }
 .of-main b { font-size: 17px; display: block; }
 .of-main small { font-size: 12px; color: var(--ink-3); }
-.of-p { text-align: right; }
-.of-p b { font-size: 28px; font-weight: 800; color: var(--red); line-height: 1.05; }
 .of-go { display: flex; align-items: center; justify-content: center; gap: 4px; height: 42px; border-radius: 12px; background: var(--navy); color: #fff; font-size: 14px; font-weight: 700; margin-top: 12px; }
 .rise-enter-active { transition: all .5s cubic-bezier(.2,.9,.3,1.15); }
 .rise-enter-from { transform: translateY(120%); opacity: 0; }

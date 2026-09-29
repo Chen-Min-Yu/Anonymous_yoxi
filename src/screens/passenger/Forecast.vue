@@ -5,15 +5,24 @@ import { commuteCurve, corridor } from '../../data/pulse'
 import { me } from '../../data/scenario'
 import Icon from '../../components/Icon.vue'
 
-const POOL_RIDE = 22 // 08:15 車程中位 20 分 + 多停 2 站約 2 分
 const total = (d) => Math.round(d.wait + d.ride)
 const cur = computed(() => commuteCurve.find((d) => d.t === '08:15'))
 
-const options = [
-  { k: 'pool', title: '順路共乘', time: '08:15 集合點上車', meta: `步行 ${me.walk.minutes} 分 · 車程約 ${POOL_RIDE} 分`, price: `$${me.pay}`, tag: `省 $${me.saved}`, action: '查看媒合' },
-  { k: 'solo', title: '自己叫車', time: '08:15 叫車', meta: '中位等 5 分 · 車程 20 分', price: '$200–300' },
-  { k: 'book', title: '預約叫車', time: '08:15 準時到門口', meta: '免等車 · 車程 20 分', price: '$250–300' },
+// 車型選擇：只影響順路共乘的車資試算，字級與說明盡量精簡
+const vehicles = [
+  { k: 'ev', label: '純電', icon: 'bolt', mult: 1 },
+  { k: 'comfort', label: '舒適', icon: 'car', mult: 1 },
+  { k: 'premium', label: '尊榮', icon: 'star', mult: 1.6 },
+  { k: 'xl', label: '六人座', icon: 'users', mult: 1.35 },
 ]
+const vehicle = ref('comfort')
+const poolPrice = computed(() => Math.round(me.pay * vehicles.find((v) => v.k === vehicle.value).mult))
+
+const options = computed(() => [
+  { k: 'pool', title: '順路共乘', time: '08:15 集合點上車', meta: `步行 ${me.walk.minutes} 分`, price: `$${poolPrice.value}`, tag: `省 $${me.solo - poolPrice.value}`, action: '查看媒合' },
+  { k: 'solo', title: '自己叫車', time: '08:15 叫車', meta: '中位等 5 分', price: '$200–300' },
+  { k: 'book', title: '預約叫車', time: '08:15 準時到門口', meta: '免等車', price: '$250–300' },
+])
 
 const upcoming = ref([
   { t: '今天 18:20', title: '下班回民生社區', note: '雷陣雨，自己叫車預估等 14 分鐘', act: '預約回程順路車', done: false, warn: true },
@@ -52,18 +61,18 @@ function doAct(u) {
           </div>
 
           <div class="readout">
-            <span class="num ro-t">{{ cur.t }} 自己叫車 · 樣本 {{ cur.n }} 筆</span>
-            <span class="ro-v">
-              門到門約 <b class="num">{{ total(cur) }} 分</b>
-              <small>（等車中位 {{ cur.wait }} 分 + 車程中位 {{ cur.ride }} 分）</small>
-            </span>
+            <span class="num ro-t">{{ cur.t }} 自己叫車</span>
+            <span class="ro-v">門到門約 <b class="num">{{ total(cur) }} 分</b></span>
           </div>
-
-          <p class="pool-cmp">同一時間改搭順路共乘：步行 {{ me.walk.minutes }} 分 + 車程約 {{ POOL_RIDE }} 分，門到門多約 3 分鐘，車資 ${{ me.pay }}（自己叫車約 ${{ me.solo }}）。</p>
         </section>
 
         <section class="block">
           <div class="h2">08:15 怎麼去</div>
+          <div class="veh-select" role="tablist">
+            <button v-for="v in vehicles" :key="v.k" :class="{ on: vehicle === v.k }" @click="vehicle = v.k">
+              <Icon :name="v.icon" :size="15" />{{ v.label }}
+            </button>
+          </div>
           <div class="opts">
             <div v-for="o in options" :key="o.k" class="opt card" :class="o.k">
               <div class="o-l">
@@ -82,7 +91,7 @@ function doAct(u) {
 
         <section class="block">
           <div class="h2">接下來的移動</div>
-          <p class="sub" style="margin-bottom: 8px">AI 從你的常用地點與時段，提前幫你看好要不要叫車、幾點出門。</p>
+          <p class="sub" style="margin-bottom: 8px">AI 提前幫你看好要不要叫車</p>
           <div class="ups card">
             <div v-for="u in upcoming" :key="u.t" class="up">
               <span class="up-t num">{{ u.t }}</span>
@@ -120,12 +129,12 @@ function doAct(u) {
 .ro-t { font-size: 12px; font-weight: 700; color: var(--ink-3); }
 .ro-v { font-size: 13px; color: var(--ink-2); }
 .ro-v b { font-size: 22px; font-weight: 800; color: var(--navy); margin: 0 2px; }
-.ro-v small { font-size: 12px; color: var(--ink-3); }
-
-.pool-cmp { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--red-soft); color: var(--red-deep); font-size: 12px; line-height: 1.6; font-weight: 600; }
 
 .block { margin-top: 20px; }
 .block > .h2 { margin-bottom: 8px; }
+.veh-select { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+.veh-select button { display: flex; flex-direction: column; align-items: center; gap: 4px; background: #fff; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 2px; font-size: 11px; font-weight: 700; color: var(--ink-3); transition: all .2s; }
+.veh-select button.on { background: var(--navy); border-color: var(--navy); color: #fff; }
 .opts { display: flex; flex-direction: column; gap: 8px; }
 .opt { display: flex; justify-content: space-between; padding: 12px 14px; gap: 10px; }
 .opt.pool { border: 2px solid var(--red); }

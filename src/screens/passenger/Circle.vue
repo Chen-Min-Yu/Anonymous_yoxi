@@ -56,8 +56,8 @@ const rewards = [
 
         <section class="insight">
           <div class="ins-h"><Icon name="sparkle" :size="15" /> AI 通勤洞察</div>
-          <p>你週三平均比其他天晚 12 分鐘出門。週三改加入 <b>08:25 班</b>，同樣有 3 位固定夥伴，不必趕路。</p>
-          <button @click="toast('已將週三改為 08:25 班')">週三改搭 08:25</button>
+          <p><b>週三建議改搭 08:25 班</b>，一樣有 3 位熟識夥伴同車。</p>
+          <button @click="toast('已將週三改為 08:25 班')">套用</button>
         </section>
 
         <section class="block">
