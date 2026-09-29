@@ -1,7 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { back, go, toast } from '../../store'
-import { commuteCurve, corridor } from '../../data/pulse'
+import { commuteCurve } from '../../data/pulse'
 import { me } from '../../data/scenario'
 import Icon from '../../components/Icon.vue'
 
@@ -9,16 +9,28 @@ const POOL_RIDE = 22 // 08:15 車程中位 20 分 + 多停 2 站約 2 分
 const total = (d) => Math.round(d.wait + d.ride)
 const cur = computed(() => commuteCurve.find((d) => d.t === '08:15'))
 
-const options = [
-  { k: 'pool', title: '順路共乘', time: '08:15 集合點上車', meta: `步行 ${me.walk.minutes} 分 · 車程約 ${POOL_RIDE} 分`, price: `$${me.pay}`, tag: `省 $${me.saved}`, action: '查看媒合' },
-  { k: 'solo', title: '自己叫車', time: '08:15 叫車', meta: '中位等 5 分 · 車程 20 分', price: '$200–300' },
-  { k: 'book', title: '預約叫車', time: '08:15 準時到門口', meta: '免等車 · 車程 20 分', price: '$250–300' },
+// 車型：價格倍率以「舒適」為基準（示意）
+const cars = [
+  { k: 'ev', label: '純電', x: 1.05 },
+  { k: 'std', label: '舒適', x: 1 },
+  { k: 'lux', label: '尊榮', x: 1.5 },
+  { k: 'six', label: '六人座', x: 1.3 },
 ]
+const car = ref('std')
+const mul = computed(() => cars.find((c) => c.k === car.value).x)
+const $ = (n) => Math.round((n * mul.value) / 5) * 5
+const range = (lo, hi) => `$${$(lo)}–${$(hi)}`
+
+const options = computed(() => [
+  { k: 'pool', title: '順路共乘', meta: `步行 ${me.walk.minutes} 分 · 車程 ${POOL_RIDE} 分`, price: `$${$(me.pay)}`, tag: `省 $${$(me.solo) - $(me.pay)}`, action: '查看媒合' },
+  { k: 'solo', title: '自己叫車', meta: `等 ${cur.value.wait} 分 · 車程 ${cur.value.ride} 分`, price: range(200, 300) },
+  { k: 'book', title: '預約叫車', meta: `免等 · 車程 ${cur.value.ride} 分`, price: range(250, 300) },
+])
 
 const upcoming = ref([
-  { t: '今天 18:20', title: '下班回民生社區', note: '雷陣雨，自己叫車預估等 14 分鐘', act: '預約回程順路車', done: false, warn: true },
-  { t: '週五 19:00', title: '南京復興聚餐', note: '你近 4 週有 3 次週五去這裡；18:40 出發可避開散場潮', act: '開啟出發提醒', done: false },
-  { t: '週日 06:30', title: '松山機場送機', note: '機場清晨供車少，建議前一晚預約', act: '預約叫車', done: false },
+  { t: '今天 18:20', title: '下班回民生社區', note: '雷陣雨，叫車約等 14 分', act: '預約回程順路車', done: false, warn: true },
+  { t: '週五 19:00', title: '南京復興聚餐', note: '18:40 出發可避開散場潮', act: '開啟出發提醒', done: false },
+  { t: '週日 06:30', title: '松山機場送機', note: '清晨車少，建議前一晚預約', act: '預約叫車', done: false },
 ])
 
 const pushes = ref([
@@ -45,36 +57,33 @@ function doAct(u) {
         <section class="card chart-card">
           <div class="cc-h">
             <div>
-              <div class="eyebrow">平日早班 · 近 90 天 {{ corridor.trips }} 筆同走廊行程</div>
+              <div class="eyebrow">平日早班 · 08:15</div>
               <div class="h2">富錦街 到 瑞光路</div>
             </div>
             <span class="chip chip-red">今天</span>
           </div>
-
           <div class="readout">
-            <span class="num ro-t">{{ cur.t }} 自己叫車 · 樣本 {{ cur.n }} 筆</span>
-            <span class="ro-v">
-              門到門約 <b class="num">{{ total(cur) }} 分</b>
-              <small>（等車中位 {{ cur.wait }} 分 + 車程中位 {{ cur.ride }} 分）</small>
-            </span>
+            <span>自己叫車 門到門</span>
+            <b class="num">{{ total(cur) }} 分</b>
           </div>
-
-          <p class="pool-cmp">同一時間改搭順路共乘：步行 {{ me.walk.minutes }} 分 + 車程約 {{ POOL_RIDE }} 分，門到門多約 3 分鐘，車資 ${{ me.pay }}（自己叫車約 ${{ me.solo }}）。</p>
+          <p class="pool-cmp">改搭共乘只多約 3 分鐘，省 ${{ me.solo - me.pay }}</p>
         </section>
 
         <section class="block">
           <div class="h2">08:15 怎麼去</div>
+          <div class="cars">
+            <button v-for="c in cars" :key="c.k" class="car-chip" :class="{ on: car === c.k }" @click="car = c.k">{{ c.label }}</button>
+          </div>
           <div class="opts">
             <div v-for="o in options" :key="o.k" class="opt card" :class="o.k">
               <div class="o-l">
                 <div class="o-t"><b>{{ o.title }}</b><span v-if="o.tag" class="chip chip-red">{{ o.tag }}</span></div>
-                <span class="o-time">{{ o.time }}</span>
                 <span class="o-meta">{{ o.meta }}</span>
               </div>
               <div class="o-r">
                 <b class="num">{{ o.price }}</b>
                 <button v-if="o.action" class="mini red" @click="go('match')">{{ o.action }}</button>
-                <button v-else class="mini" @click="toast(o.k === 'book' ? '已預約 08:15 到車' : '一般叫車沿用 yoxi 現有流程')">{{ o.k === 'book' ? '預約' : '叫車' }}</button>
+                <button v-else class="mini" @click="toast(o.k === 'book' ? '已預約 08:15 到車' : '已叫車')">{{ o.k === 'book' ? '預約' : '叫車' }}</button>
               </div>
             </div>
           </div>
@@ -82,7 +91,6 @@ function doAct(u) {
 
         <section class="block">
           <div class="h2">接下來的移動</div>
-          <p class="sub" style="margin-bottom: 8px">AI 從你的常用地點與時段，提前幫你看好要不要叫車、幾點出門。</p>
           <div class="ups card">
             <div v-for="u in upcoming" :key="u.t" class="up">
               <span class="up-t num">{{ u.t }}</span>
@@ -116,23 +124,22 @@ function doAct(u) {
 .chart-card { padding: 16px; }
 .cc-h { display: flex; justify-content: space-between; align-items: flex-start; }
 .cc-h .h2 { margin-top: 2px; }
-.readout { margin: 12px 0 8px; padding: 10px 12px; background: var(--bg); border-radius: 12px; display: flex; flex-direction: column; }
-.ro-t { font-size: 12px; font-weight: 700; color: var(--ink-3); }
-.ro-v { font-size: 13px; color: var(--ink-2); }
-.ro-v b { font-size: 22px; font-weight: 800; color: var(--navy); margin: 0 2px; }
-.ro-v small { font-size: 12px; color: var(--ink-3); }
+.readout { margin: 12px 0 0; padding: 10px 12px; background: var(--bg); border-radius: 12px; display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--ink-2); font-weight: 600; }
+.readout b { font-size: 22px; font-weight: 800; color: var(--navy); }
 
 .pool-cmp { margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--red-soft); color: var(--red-deep); font-size: 12px; line-height: 1.6; font-weight: 600; }
 
 .block { margin-top: 20px; }
 .block > .h2 { margin-bottom: 8px; }
+.cars { display: flex; gap: 6px; margin-bottom: 10px; }
+.car-chip { flex: 1; height: 34px; border-radius: 10px; background: #fff; border: 1px solid var(--line); font-size: 13px; font-weight: 700; color: var(--ink-2); }
+.car-chip.on { background: var(--navy); border-color: var(--navy); color: #fff; }
 .opts { display: flex; flex-direction: column; gap: 8px; }
 .opt { display: flex; justify-content: space-between; padding: 12px 14px; gap: 10px; }
 .opt.pool { border: 2px solid var(--red); }
 .o-l { display: flex; flex-direction: column; min-width: 0; }
 .o-t { display: flex; align-items: center; gap: 6px; }
 .o-t b { font-size: 15px; }
-.o-time { font-size: 13px; color: var(--navy); font-weight: 600; margin-top: 2px; }
 .o-meta { font-size: 12px; color: var(--ink-3); }
 .o-r { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: 6px; flex-shrink: 0; }
 .o-r b { font-size: 18px; font-weight: 800; }
