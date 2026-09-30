@@ -1,6 +1,6 @@
 <script setup>
 import { onBeforeUnmount, ref } from 'vue'
-import { go, toast } from '../../store'
+import { go, store, toast } from '../../store'
 import { user, banners, menuItems } from '../../data/origin'
 import { trip } from '../../data/merged'
 import { areaStats, slots, cellsFor, dotRadius, demandBinOf, HOTSPOT_MIN } from '../../data/pulse'
@@ -45,6 +45,11 @@ const newItems = [
   { label: '城市版圖', to: 'atlas' },
   { label: '企業方案', to: 'enterprise' },
 ]
+// 從首頁的順路圈卡片進來，直接停在「順路共乘」分頁
+function openPool() {
+  store.bookMode = 'pool'
+  go('m-book')
+}
 function openMenu(item) {
   menu.value = false
   go(item.to)
@@ -116,7 +121,7 @@ function openMenu(item) {
       </button>
 
       <!-- 新增三：順路圈邀請 -->
-      <button class="pool" @click="go('m-book')">
+      <button class="pool" @click="openPool">
         <div class="po-h">
           <span class="po-t"><Icon name="users" :size="14" /> 順路圈 <span class="yx-new">新</span></span>
           <span class="po-time">08:15 出發 · 剩 18 分可加入</span>

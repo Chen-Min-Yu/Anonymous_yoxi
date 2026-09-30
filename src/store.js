@@ -43,6 +43,7 @@ export const store = reactive({
   direction: 'forward',
   history: [],
   toast: '',
+  bookMode: 'instant', // 進入叫車頁時預選的分頁：instant / scheduled / pool
 })
 
 export function go(id, opts = {}) {

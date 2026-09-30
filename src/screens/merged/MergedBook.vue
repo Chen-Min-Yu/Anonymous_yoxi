@@ -1,6 +1,6 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { back, go, toast } from '../../store'
+import { back, go, store, toast } from '../../store'
 import { cars, defaultSchedule } from '../../data/origin'
 import { trip } from '../../data/merged'
 import { me, places, routes } from '../../data/scenario'
@@ -10,9 +10,10 @@ import Icon from '../../components/Icon.vue'
 import CarArt from '../../components/CarArt.vue'
 
 // 在 yoxi 原本的「立即叫車／預約」之外，加入第三個分頁「順路共乘」
-const mode = ref('instant')
+const mode = ref(store.bookMode)
+store.bookMode = 'instant' // 用過就還原，下次從首頁輸入框進來仍是立即叫車
 const sched = ref({ ...defaultSchedule })
-const picked = ref('any')
+const picked = ref(mode.value === 'pool' ? 'pool3' : 'any')
 const showPicker = ref(false)
 
 // 順路共乘的兩種車型：一般四人座與六人座（六人座可分攤人數多，每人更省）
@@ -50,6 +51,12 @@ function confirmSchedule() {
 const cta = computed(() =>
   mode.value === 'pool' ? '確認加入順路車' : mode.value === 'scheduled' ? '確認預約' : '確認叫車',
 )
+
+function submit() {
+  // 加入順路車後接到媒合詳情，看集合點與分攤
+  if (mode.value === 'pool') return go('m-pool')
+  toast(mode.value === 'scheduled' ? `已預約 ${sched.value.date} ${sched.value.time}` : '已送出叫車')
+}
 
 const layers = [
   { type: 'line', coords: trip.route, color: '#8C1B27', weight: 5 },
@@ -120,7 +127,7 @@ const fit = [...routes.soloA]
         <button @click="toast('乘車需求')"><Icon name="doc" :size="15" /> 乘車需求</button>
       </div>
 
-      <button class="yx-btn cta" @click="toast(mode === 'pool' ? '已加入 08:15 順路車' : '已送出')">{{ cta }}</button>
+      <button class="yx-btn cta" @click="submit">{{ cta }}</button>
     </div>
 
     <!-- 預約時間選擇：每個時段標上城市脈動的等車時間 -->
