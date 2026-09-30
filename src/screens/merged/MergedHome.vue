@@ -1,9 +1,9 @@
 <script setup>
 import { onBeforeUnmount, ref } from 'vue'
 import { go, toast } from '../../store'
-import { user, banners } from '../../data/origin'
+import { user, banners, menuItems } from '../../data/origin'
 import { trip } from '../../data/merged'
-import { areaStats } from '../../data/pulse'
+import { areaStats, slots, cellsFor, dotRadius, demandBinOf, HOTSPOT_MIN } from '../../data/pulse'
 import { me, split } from '../../data/scenario'
 import { riderColor } from '../../components/mapkit'
 import RouteMap from '../../components/RouteMap.vue'
@@ -14,23 +14,55 @@ const bi = ref(0)
 const timer = setInterval(() => (bi.value = (bi.value + 1) % banners.length), 3200)
 onBeforeUnmount(() => clearInterval(timer))
 
+const menu = ref(false)
 const pulse = areaStats('now').filter((a) => ['minsheng', 'nanjing', 'neihu'].includes(a.k))
 const mates = split.riders.filter((r) => !r.me)
 
-const layers = [
-  { type: 'marker', latlng: trip.pickupLL, size: [26, 34], anchor: [13, 34], z: 300, html: '<div class="o-pin"><span></span></div>' },
+// 移動預報改成跑馬燈，不佔版面，點了才進去看完整內容
+const ticker = [
+  `08:15 出發最順，門到門約 25 分`,
+  `自己叫車中位等 5 分，順路共乘省 $${me.saved}`,
+  `18 點內湖科學園區最難叫，10% 要等 15 分以上`,
 ]
-const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
+
+// 首頁地圖直接疊上叫車熱點，不用進城市脈動也看得到。
+// 首頁只畫熱點本身，非熱點不畫，避免淡色點在底圖上變成雜訊
+const hotspots = cellsFor(slots[0])
+  .filter((c) => c.per_day >= HOTSPOT_MIN)
+  .map((c) => ({
+    type: 'dot', latlng: c.ll, radius: dotRadius(c.per_day),
+    fill: demandBinOf(c.per_day).color, fillOpacity: 0.85, weight: 1.5,
+  }))
+const layers = [
+  ...hotspots,
+  { type: 'marker', latlng: trip.pickupLL, size: [26, 34], anchor: [13, 34], z: 400, html: '<div class="o-pin"><span></span></div>' },
+]
+const fit = [[25.0495, 121.5405], [25.0665, 121.5655]]
+
+// 側選單：把企業方案、城市版圖、我的順路圈收進來
+const newItems = [
+  { label: '我的順路圈', to: 'circle' },
+  { label: '城市版圖', to: 'atlas' },
+  { label: '企業方案', to: 'enterprise' },
+]
+function openMenu(item) {
+  menu.value = false
+  go(item.to)
+}
 </script>
 
 <template>
   <div class="scr yx">
-    <RouteMap :layers="layers" :fit="fit" :padding-top="80" :padding-bottom="470" :padding="[20, 20]" />
+    <RouteMap :layers="layers" :fit="fit" :padding-top="80" :padding-bottom="470" :padding="[16, 16]" />
 
-    <button class="yx-fab dark menu" @click="toast('側選單')"><Icon name="menu" :size="20" :stroke="2.4" /></button>
+    <button class="yx-fab dark menu" @click="menu = true"><Icon name="menu" :size="20" :stroke="2.4" /></button>
     <div class="fab-right">
       <button class="yx-fab" @click="toast('全螢幕地圖')"><Icon name="target" :size="18" /></button>
       <button class="yx-fab" @click="toast('沒有新通知')"><Icon name="bell" :size="18" /></button>
+    </div>
+    <div class="map-key">
+      <span class="mk-t">叫車熱點 <span class="yx-new">新</span></span>
+      <span class="mk-i"><i style="background: #9BBFDC"></i><i style="background: #5C93C2"></i><i style="background: #0C4C80"></i>越深越多人叫車</span>
     </div>
 
     <div class="yx-sheet sheet">
@@ -42,9 +74,19 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
         <YoxiLogo :height="14" :color="banners[bi].tone === 'cream' ? '#D8303C' : '#fff'" />
       </div>
 
+      <!-- 新增一：移動預報跑馬燈 -->
+      <button class="ticker" @click="go('forecast')">
+        <span class="tk-ic"><Icon name="sparkle" :size="13" /></span>
+        <span class="tk-win">
+          <span class="tk-track">
+            <span v-for="(t, i) in [...ticker, ...ticker]" :key="i" class="tk-item">{{ t }}</span>
+          </span>
+        </span>
+        <span class="tk-go"><Icon name="chevron" :size="13" /></span>
+      </button>
+
       <div class="greet">{{ user.greeting }}，{{ user.name }}今天要去哪？</div>
 
-      <!-- yoxi 原本的上下車點輸入，維持原樣 -->
       <div class="inputs">
         <div class="row">
           <span class="dot start"></span>
@@ -58,7 +100,7 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
         </div>
       </div>
 
-      <!-- 新增一：城市脈動。不輸入目的地也有內容可看 -->
+      <!-- 新增二：城市脈動 -->
       <button class="pulse" @click="go('pulse')">
         <div class="p-h">
           <span class="p-t"><i class="live"></i> 城市脈動 <span class="yx-new">新</span></span>
@@ -73,7 +115,7 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
         </div>
       </button>
 
-      <!-- 新增二：順路圈邀請。直接接到 yoxi 的叫車面板 -->
+      <!-- 新增三：順路圈邀請 -->
       <button class="pool" @click="go('m-book')">
         <div class="po-h">
           <span class="po-t"><Icon name="users" :size="14" /> 順路圈 <span class="yx-new">新</span></span>
@@ -100,6 +142,29 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
         <span class="q-hint">輸入下車地點，繼續叫車</span>
       </div>
     </div>
+
+    <!-- 側選單：企業方案、城市版圖、我的順路圈收在這裡 -->
+    <Transition name="fade"><div v-if="menu" class="scrim" @click="menu = false"></div></Transition>
+    <Transition name="drawer">
+      <div v-if="menu" class="drawer">
+        <div class="d-head">
+          <div class="d-user">
+            <span class="ava"><Icon name="user" :size="20" /></span>
+            <b>{{ user.name }}</b>
+            <Icon name="chevron" :size="16" />
+          </div>
+          <button class="d-close" @click="menu = false"><Icon name="close" :size="20" /></button>
+        </div>
+        <nav class="d-nav">
+          <button v-for="n in newItems" :key="n.label" class="d-new" @click="openMenu(n)">
+            {{ n.label }} <span class="yx-new">新</span>
+          </button>
+          <div class="d-sep"></div>
+          <button v-for="m in menuItems" :key="m" @click="toast(m)">{{ m }}</button>
+        </nav>
+        <div class="d-foot">邀請好友賺招車金 <Icon name="gift" :size="14" /></div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -107,6 +172,11 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
 .menu { top: 58px; left: 14px; }
 .fab-right { position: absolute; top: 58px; right: 14px; z-index: 600; display: flex; gap: 8px; }
 .fab-right .yx-fab { position: relative; }
+.map-key { position: absolute; top: 108px; left: 14px; z-index: 600; background: rgba(255,255,255,.94); border-radius: 8px; padding: 6px 9px; display: flex; flex-direction: column; gap: 3px; box-shadow: 0 2px 8px rgba(5,17,34,.14); }
+.mk-t { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--yx-ink); }
+.mk-i { display: flex; align-items: center; gap: 3px; font-size: 10px; color: var(--yx-ink2); }
+.mk-i i { width: 9px; height: 9px; border-radius: 50%; }
+.mk-i i:last-of-type { margin-right: 3px; }
 
 .sheet { padding-bottom: 24px; }
 .banner { height: 58px; border-radius: 16px 16px 0 0; padding: 0 16px; display: flex; align-items: center; justify-content: space-between; }
@@ -119,6 +189,14 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
 .banner.cream .b-txt b { color: var(--yx-red); }
 .banner.cream .b-txt span { color: #8A5A22; }
 .banner.red .b-txt, .banner.dark .b-txt { color: #fff; }
+
+.ticker { display: flex; align-items: center; gap: 8px; width: 100%; height: 34px; padding: 0 12px; background: var(--yx-field); border-bottom: 1px solid var(--yx-line2); }
+.tk-ic { width: 20px; height: 20px; border-radius: 50%; background: var(--yx-red); color: #fff; display: grid; place-items: center; flex-shrink: 0; }
+.tk-win { flex: 1; overflow: hidden; height: 18px; position: relative; }
+.tk-track { display: flex; gap: 28px; white-space: nowrap; animation: tk 18s linear infinite; }
+.tk-item { font-size: 12px; color: var(--yx-ink); line-height: 18px; }
+@keyframes tk { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.tk-go { color: var(--yx-ink3); flex-shrink: 0; }
 
 .greet { font-size: 14px; color: var(--yx-ink); padding: 12px 16px 8px; }
 .inputs { margin: 0 16px; border: 1px solid var(--yx-line); border-radius: 6px; }
@@ -133,7 +211,7 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
 .ph { font-size: 14px; color: var(--yx-ink3); }
 .pen { color: var(--yx-red); flex-shrink: 0; }
 
-.pulse { display: block; width: 100%; text-align: left; margin: 12px 16px 0; width: calc(100% - 32px); padding: 11px 12px; border: 1px solid var(--yx-line); border-radius: 8px; background: #fff; }
+.pulse { display: block; text-align: left; margin: 12px 16px 0; width: calc(100% - 32px); padding: 11px 12px; border: 1px solid var(--yx-line); border-radius: 8px; background: #fff; }
 .p-h { display: flex; align-items: center; justify-content: space-between; }
 .p-t { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--yx-ink); }
 .live { width: 7px; height: 7px; border-radius: 50%; background: var(--yx-red); animation: lv 1.4s infinite; }
@@ -164,4 +242,22 @@ const fit = [[25.0565, 121.5486], [25.0632, 121.5572]]
 .quick { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 0; }
 .q-air { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 12px; border-radius: 15px; background: var(--yx-navy); color: #fff; font-size: 12px; font-weight: 600; }
 .q-hint { font-size: 11px; color: var(--yx-ink3); }
+
+.scrim { position: absolute; inset: 0; background: rgba(5,17,34,.35); z-index: 900; }
+.drawer { position: absolute; top: 0; bottom: 0; left: 0; width: 72%; z-index: 1000; background: #DE262A; color: #fff; display: flex; flex-direction: column; padding: 52px 0 18px; }
+.d-head { display: flex; align-items: flex-start; justify-content: space-between; padding: 0 16px; }
+.d-user { display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 700; }
+.ava { width: 36px; height: 36px; border-radius: 50%; background: #fff; color: #DE262A; display: grid; place-items: center; }
+.d-close { color: #fff; }
+.d-nav { display: flex; flex-direction: column; margin-top: 22px; overflow-y: auto; scrollbar-width: none; }
+.d-nav::-webkit-scrollbar { display: none; }
+.d-nav button { display: flex; align-items: center; justify-content: flex-end; gap: 7px; text-align: right; padding: 10px 22px; font-size: 15px; font-weight: 500; color: #fff; flex-shrink: 0; }
+.d-nav .d-new { font-weight: 700; }
+.d-nav .yx-new { background: #fff; color: #DE262A; }
+.d-sep { height: 1px; background: rgba(255,255,255,.28); margin: 8px 22px; flex-shrink: 0; }
+.d-foot { margin-top: auto; text-align: center; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 5px; padding-top: 12px; }
+.drawer-enter-active, .drawer-leave-active { transition: transform .28s cubic-bezier(.32,.72,0,1); }
+.drawer-enter-from, .drawer-leave-to { transform: translateX(-100%); }
+.fade-enter-active, .fade-leave-active { transition: opacity .28s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>

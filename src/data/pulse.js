@@ -31,8 +31,8 @@ export const binOf = (w) => bins.find((b) => w < b.max)
 
 // 需求密度（循序色階：單一深藍色系，淺到深）
 export const demandBins = [
-  { max: 3, color: '#BBD3E8', label: '2–3 筆' },
-  { max: 4.5, color: '#7FA8CC', label: '3–4.5 筆' },
+  { max: 3, color: '#9BBFDC', label: '2–3 筆' },
+  { max: 4.5, color: '#5C93C2', label: '3–4.5 筆' },
   { max: 6, color: '#3D7CB0', label: '4.5–6 筆' },
   { max: Infinity, color: '#0C4C80', label: '6 筆以上' },
 ]
@@ -70,7 +70,7 @@ export const slots = [
   {
     id: 'now', label: '07:30', sub: '平日早高峰', time: '平日 07:30–08:30',
     summary: `平日早高峰全區等車中位數 ${g.now.wait_median.toFixed(1)} 分鐘（近 90 天 ${fmt(g.now.trips)} 筆）。內湖科學園區最久，中位 ${a.neihu.slots.now.wait} 分，且有 10% 的叫車超過 ${a.neihu.slots.now.p90} 分；民生社區相對好叫，中位 ${a.minsheng.slots.now.wait} 分。`,
-    tip: { text: '民生社區往內湖：加入 08:15 順路車，車資省一半', to: 'match' },
+    tip: { text: '民生社區往內湖：加入 08:15 順路車，車資省一半', to: 'm-pool' },
   },
   {
     id: 'h9', label: '09:00', sub: '通勤潮後', time: '平日 09:00–10:00',

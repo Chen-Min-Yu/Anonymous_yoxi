@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue'
-import { go, toast } from '../../store'
+import { back, go, toast } from '../../store'
 import { me, split } from '../../data/scenario'
 import { riderColor } from '../../components/mapkit'
 import Icon from '../../components/Icon.vue'
@@ -19,6 +19,7 @@ const points = me.pay
 <template>
   <div class="scr">
     <div class="scroll">
+      <button class="scr-back light" @click="back"><Icon name="back" :size="20" /></button>
       <header class="hero">
         <div class="ok"><Icon name="check" :size="30" :stroke="3" /></div>
         <div class="eyebrow light">08:28 抵達瑞光路</div>
@@ -78,7 +79,7 @@ const points = me.pay
           <p class="sub">達成後可兌換 7-ELEVEN 早餐組合，或把點數捐給植樹計畫。</p>
         </div>
 
-        <button class="btn btn-red" style="margin-top: 16px" @click="go('circle')">查看我的順路圈</button>
+        <button class="btn btn-red" style="margin-top: 16px" @click="go('m-home')">回首頁</button>
         <div style="height: 36px"></div>
       </div>
     </div>

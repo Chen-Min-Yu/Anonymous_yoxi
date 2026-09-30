@@ -1,11 +1,10 @@
 <script setup>
-import { go, toast } from '../../store'
+import { back, go, toast } from '../../store'
 import { routes, places } from '../../data/scenario'
 import { meetPin } from '../../components/mapkit'
 import { corridor } from '../../data/pulse'
 import RouteMap from '../../components/RouteMap.vue'
 import Icon from '../../components/Icon.vue'
-import TabBar from '../../components/TabBar.vue'
 
 const layers = [
   { type: 'line', coords: routes.soloB, color: '#778AA4', weight: 7, opacity: 0.35 },
@@ -30,6 +29,7 @@ const rewards = [
 <template>
   <div class="scr">
     <div class="scroll">
+      <button class="scr-back" @click="back"><Icon name="back" :size="20" /></button>
       <div class="head pad">
         <div class="eyebrow">我的順路圈</div>
         <div class="h1">民生社區 到 內湖科學園區</div>
@@ -99,12 +99,11 @@ const rewards = [
         <div style="height: 24px"></div>
       </div>
     </div>
-    <TabBar active="circle" />
   </div>
 </template>
 
 <style scoped>
-.head { padding-top: 62px; padding-bottom: 12px; }
+.head { padding-top: 96px; padding-bottom: 12px; }
 .corridor { overflow: hidden; }
 .map-box { position: relative; height: 180px; }
 .map-tag { position: absolute; left: 10px; top: 10px; z-index: 500; }

@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted, onBeforeUnmount, ref } from 'vue'
-import { go, toast } from '../../store'
+import { back, go, toast } from '../../store'
 import { split, segments, me } from '../../data/scenario'
 import { lines, meetPin, dropPin, carPin, riders, allRoute, sampleAlong, riderColor } from '../../components/mapkit'
 import RouteMap from '../../components/RouteMap.vue'
@@ -46,6 +46,7 @@ const stops = computed(() => [
   <div class="scr">
     <div class="map-area">
       <RouteMap ref="mapRef" :layers="layers" :fit="allRoute" :padding-top="130" :padding-bottom="20" />
+      <button class="scr-back" @click="back"><Icon name="back" :size="20" /></button>
       <div class="live">
         <div class="live-l">
           <span class="pulse"></span>

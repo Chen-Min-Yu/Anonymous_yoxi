@@ -36,7 +36,7 @@ export function optionsFor(car) {
       // 六人座車資較高，但同一趟可分攤的人數也較多，每人反而更省
       fare: Math.round((me.pay * m * (3 / poolSeats)) / 5) * 5,
       note: poolSeats > 3 ? `${poolSeats} 人分攤，每人更省` : '集合點上車，3 人共乘',
-      action: { text: '查看媒合', to: 'match' },
+      action: { text: '查看媒合', to: 'm-pool' },
       highlight: true,
     },
     {

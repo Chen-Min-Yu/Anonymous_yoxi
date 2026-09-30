@@ -1,10 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
-import { go, toast } from '../../store'
+import { back, go, toast } from '../../store'
 import { slots, cellsFor, places, areaList, areaStats, real, mapModes, dotRadius, HOTSPOT_MIN, GREY } from '../../data/pulse'
 import RouteMap from '../../components/RouteMap.vue'
 import Icon from '../../components/Icon.vue'
-import TabBar from '../../components/TabBar.vue'
 
 const slotId = ref('now')
 const slot = computed(() => slots.find((s) => s.id === slotId.value))
@@ -72,6 +71,7 @@ function followTip() {
 <template>
   <div class="scr">
     <div class="scroll">
+      <button class="scr-back" @click="back"><Icon name="back" :size="20" /></button>
       <header class="head pad">
         <div>
           <div class="eyebrow"><span class="live"></span> 城市脈動 · 台北東區</div>
@@ -151,12 +151,11 @@ function followTip() {
         <div style="height: 20px"></div>
       </div>
     </div>
-    <TabBar active="pulse" />
   </div>
 </template>
 
 <style scoped>
-.head { padding-top: 62px; padding-bottom: 12px; }
+.head { padding-top: 96px; padding-bottom: 12px; }
 .live { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--red); margin-right: 4px; vertical-align: 1px; animation: blinkLive 1.4s infinite; }
 @keyframes blinkLive { 50% { opacity: .3; } }
 .small { font-size: 12px; }

@@ -5,9 +5,6 @@ import Icon from './components/Icon.vue'
 import YoxiLogo from './components/YoxiLogo.vue'
 import StatusBar from './components/StatusBar.vue'
 
-import Lock from './screens/passenger/Lock.vue'
-import Home from './screens/passenger/Home.vue'
-import Match from './screens/passenger/Match.vue'
 import Fare from './screens/passenger/Fare.vue'
 import Meetup from './screens/passenger/Meetup.vue'
 import Ride from './screens/passenger/Ride.vue'
@@ -30,7 +27,7 @@ import MBook from './screens/merged/MergedBook.vue'
 import MPool from './screens/merged/MergedPool.vue'
 
 const screens = {
-  lock: Lock, home: Home, match: Match, fare: Fare, meetup: Meetup, ride: Ride,
+  fare: Fare, meetup: Meetup, ride: Ride,
   done: Done, circle: Circle, enterprise: Enterprise, pulse: Pulse, forecast: Forecast, atlas: Atlas,
   'd-home': DHome, 'd-offer': DOffer, 'd-trip': DTrip, 'd-earn': DEarn,
   'o-home': OHome, 'o-dest': ODest, 'o-book': OBook, 'o-trips': OTrips,
@@ -38,8 +35,8 @@ const screens = {
 }
 
 const current = computed(() => screens[store.screen])
-const darkStatus = computed(() => ['lock', 'd-home', 'd-earn', 'done', 'o-trips'].includes(store.screen))
-const solidStatus = computed(() => ['home', 'pulse', 'forecast', 'fare', 'circle', 'atlas', 'enterprise'].includes(store.screen))
+const darkStatus = computed(() => ['d-home', 'd-earn', 'done', 'o-trips'].includes(store.screen))
+const solidStatus = computed(() => ['pulse', 'forecast', 'fare', 'circle', 'atlas', 'enterprise'].includes(store.screen))
 const presenting = ref(false)
 const list = computed(() => flows[store.role])
 const idx = computed(() => list.value.findIndex((s) => s.id === store.screen))
@@ -77,16 +74,12 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
         <button :class="{ on: store.role === 'origin' }" @click="switchRole('origin')">
           <Icon name="phone" :size="16" /> yoxi 現況
         </button>
-        <button :class="{ on: store.role === 'merged' }" @click="switchRole('merged')">
-          <Icon name="sparkle" :size="16" /> 整合版
-        </button>
       </div>
       <p v-if="store.role === 'origin'" class="origin-note">
         依 2026/09/29 yoxi App 實機錄影還原的現行預約叫車流程，作為提案前後對照用。
       </p>
-      <p v-else-if="store.role === 'merged'" class="origin-note">
-        把城市脈動與順路圈接進 yoxi 現行介面，沿用它的版面、配色與叫車動線；標
-        <span class="yx-new">新</span> 的就是提案新增的部分。
+      <p v-else-if="store.role === 'passenger'" class="origin-note">
+        沿用 yoxi 現行介面的版面、配色與叫車動線，標 <span class="yx-new">新</span> 的是提案新增的部分。
       </p>
 
       <ol class="flow">
@@ -117,7 +110,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           <Transition name="toast">
             <div v-if="store.toast" class="toast">{{ store.toast }}</div>
           </Transition>
-          <div class="home-ind" :class="{ light: store.screen === 'lock' }"></div>
+          <div class="home-ind"></div>
         </div>
       </div>
       <div class="step-ctrl">
@@ -144,7 +137,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .brand-sub span { font-size: 12px; color: var(--ink-3); font-weight: 500; }
 .pitch { margin: 18px 0 22px; font-size: 14px; line-height: 1.8; color: var(--ink-2); }
 
-.seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px; background: #fff; border-radius: 14px; padding: 4px; box-shadow: var(--shadow-card); }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: #fff; border-radius: 14px; padding: 4px; box-shadow: var(--shadow-card); }
 .seg button { height: 40px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--ink-3); display: flex; align-items: center; justify-content: center; gap: 6px; transition: all .2s; }
 .seg button.on { background: var(--navy); color: #fff; }
 

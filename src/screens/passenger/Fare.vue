@@ -1,40 +1,14 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { back, go, toast } from '../../store'
-import { split, segments, riders as baseRiders } from '../../data/scenario'
+import { split, pctSplit } from '../../data/scenario'
 import { riderColor } from '../../components/mapkit'
 import Icon from '../../components/Icon.vue'
 
 const sel = ref('A')
 const totalKm = (split.totalMeters / 1000).toFixed(1)
 
-// 每個人依「自己實際共乘的里程」佔全體總里程的比例分攤車資，不再拆解共同/專屬路段
-const pctSplit = computed(() => {
-  const withOwnMeters = baseRiders.map((br) => ({
-    ...br,
-    ownMeters: segments.filter((s) => s.riders.includes(br.id)).reduce((sum, s) => sum + s.meters, 0),
-  }))
-  const totalOwnMeters = withOwnMeters.reduce((sum, x) => sum + x.ownMeters, 0)
-
-  return withOwnMeters.map((x) => {
-    const solo = split.riders.find((s) => s.id === x.id).solo
-    const rideShare = Math.round((x.ownMeters / totalOwnMeters) * split.totalFare)
-    const serviceFee = split.riders.find((s) => s.id === x.id).serviceFee
-    const pay = rideShare + serviceFee
-    const subsidy = Math.round(pay * 0.5)
-    return {
-      ...x,
-      pct: Math.round((x.ownMeters / totalOwnMeters) * 100),
-      rideShare,
-      serviceFee,
-      pay,
-      solo,
-      savedPct: Math.round(((solo - pay) / solo) * 100),
-      subsidy,
-    }
-  })
-})
-const r = computed(() => pctSplit.value.find((x) => x.id === sel.value))
+const r = computed(() => pctSplit.find((x) => x.id === sel.value))
 const selfPay = computed(() => r.value.pay - r.value.subsidy)
 
 function confirm() {
@@ -54,7 +28,7 @@ function confirm() {
       <div class="pad">
         <!-- 選擇檢視的乘客 -->
         <div class="who">
-          <button v-for="x in split.riders" :key="x.id" :class="{ on: sel === x.id }" @click="sel = x.id">
+          <button v-for="x in pctSplit" :key="x.id" :class="{ on: sel === x.id }" @click="sel = x.id">
             <i :style="{ background: riderColor[x.id] }"></i>{{ x.me ? '你' : x.name }}
           </button>
         </div>

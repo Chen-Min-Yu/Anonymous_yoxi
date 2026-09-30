@@ -80,7 +80,37 @@ export function computeSplit() {
 }
 
 export const split = computeSplit()
-export const me = split.riders.find((r) => r.me)
+
+// 里程占比分攤（Llona 分支採用）：每人依自己實際共乘的里程占總里程的比例分攤。
+// 目前畫面統一用這一套，逐段分攤的 computeSplit() 保留在上面，要換規則改這裡即可。
+export function computePctSplit() {
+  const own = riders.map((r) => ({
+    ...r,
+    ownMeters: segments.filter((s) => s.riders.includes(r.id)).reduce((sum, s) => sum + s.meters, 0),
+  }))
+  const totalOwn = own.reduce((sum, x) => sum + x.ownMeters, 0)
+  return own.map((r) => {
+    const base = split.riders.find((x) => x.id === r.id)
+    const rideShare = Math.round((r.ownMeters / totalOwn) * split.totalFare)
+    const pay = rideShare + SERVICE_FEE
+    const attributedKm = r.ownMeters / 1000
+    const savedKm = r.soloMeters / 1000 - attributedKm
+    return {
+      ...base,
+      ownMeters: r.ownMeters,
+      pct: Math.round((r.ownMeters / totalOwn) * 100),
+      rideShare,
+      pay,
+      saved: base.solo - pay,
+      savedPct: Math.round(((base.solo - pay) / base.solo) * 100),
+      co2: +(savedKm * EMISSION_KG_PER_KM).toFixed(2),
+      subsidy: Math.round(pay * 0.5),
+    }
+  })
+}
+
+export const pctSplit = computePctSplit()
+export const me = pctSplit.find((r) => r.me)
 
 export const driver = {
   name: '王大哥', car: 'Toyota Prius', plate: 'TDA-6608', rating: 4.96,

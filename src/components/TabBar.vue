@@ -4,12 +4,6 @@ import { go, toast } from '../store'
 
 const props = defineProps({ active: String, driver: Boolean })
 
-const passengerTabs = [
-  { id: 'home', label: '首頁', icon: 'home' },
-  { id: 'pulse', label: '城市脈動', icon: 'target' },
-  { id: 'circle', label: '順路圈', icon: 'users' },
-  { id: 'enterprise', label: '企業', icon: 'building' },
-]
 const driverTabs = [
   { id: 'd-home', label: '接單', icon: 'car' },
   { id: 'd-earn', label: '收入', icon: 'chart' },
@@ -25,7 +19,7 @@ function tap(t) {
 
 <template>
   <nav class="tabbar">
-    <button v-for="t in (props.driver ? driverTabs : passengerTabs)" :key="t.label" :class="{ on: t.id === props.active }" @click="tap(t)">
+    <button v-for="t in driverTabs" :key="t.label" :class="{ on: t.id === props.active }" @click="tap(t)">
       <Icon :name="t.icon" :size="23" :stroke="t.id === props.active ? 2.3 : 1.8" />
       <span>{{ t.label }}</span>
     </button>

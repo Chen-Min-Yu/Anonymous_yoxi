@@ -1,8 +1,7 @@
 <script setup>
 import { ref } from 'vue'
-import { toast } from '../../store'
+import { back, toast } from '../../store'
 import Icon from '../../components/Icon.vue'
-import TabBar from '../../components/TabBar.vue'
 
 const tab = ref('me')
 const email = ref('minyu.chen@ruiguang-tech.com.tw')
@@ -22,6 +21,7 @@ const depts = [
 <template>
   <div class="scr">
     <div class="scroll">
+      <button class="scr-back" @click="back"><Icon name="back" :size="20" /></button>
       <div class="head pad">
         <div class="eyebrow">yoxi 企業方案</div>
         <div class="h1">瑞光科技股份有限公司</div>
@@ -104,12 +104,11 @@ const depts = [
       </div>
       <div style="height: 24px"></div>
     </div>
-    <TabBar active="enterprise" />
   </div>
 </template>
 
 <style scoped>
-.head { padding-top: 62px; padding-bottom: 14px; }
+.head { padding-top: 96px; padding-bottom: 14px; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; background: var(--mist); border-radius: 12px; padding: 3px; margin-top: 12px; }
 .seg button { height: 34px; border-radius: 9px; font-size: 13px; font-weight: 700; color: var(--ink-2); }
 .seg button.on { background: #fff; color: var(--navy); box-shadow: var(--shadow-card); }
