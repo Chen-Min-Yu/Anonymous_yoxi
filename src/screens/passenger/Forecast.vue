@@ -1,8 +1,8 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { back, go, toast } from '../../store'
 import { commuteCurve, corridor } from '../../data/pulse'
-import { carTypes, optionsFor, legStyles } from '../../data/travel'
+import { carTypes, optionsFor, legStyles, transitRoutesFor, stepStyles, DEPART } from '../../data/travel'
 import Icon from '../../components/Icon.vue'
 
 const hover = ref(commuteCurve.findIndex((d) => d.t === '08:15'))
@@ -17,6 +17,11 @@ const maxLen = computed(() => Math.max(...options.value.map((o) => o.total)))
 const fastest = computed(() => Math.min(...options.value.map((o) => o.total)))
 const cheapest = computed(() => Math.min(...options.value.map((o) => o.fare)))
 
+const transit = computed(() => transitRoutesFor(car.value))
+const routeK = ref('mrt')
+const route = computed(() => transit.value.find((r) => r.k === routeK.value))
+const routeEl = ref(null)
+
 const upcoming = ref([
   { t: '今天 18:20', title: '下班回民生社區', note: '18 點最難叫車，預約可保留座位', act: '預約順路車', done: false, warn: true },
   { t: '週五 19:00', title: '南京復興聚餐', note: '18:40 出發可避開散場潮', act: '出發提醒', done: false },
@@ -24,9 +29,15 @@ const upcoming = ref([
 ])
 
 function tap(o) {
-  if (!o.action) return toast(o.k === 'mrt' ? '大眾運輸資訊由台北捷運提供' : '一般叫車沿用 yoxi 現有流程')
+  if (!o.action) return toast('一般叫車沿用 yoxi 現有流程')
   if (o.action.to) go(o.action.to)
+  else if (o.action.route) showRoute(o.action.route)
   else toast(o.action.toast)
+}
+// 「怎麼去」的捷運選項點了直接帶到下方的路線推薦
+function showRoute(k) {
+  routeK.value = k
+  nextTick(() => routeEl.value?.scrollIntoView({ behavior: 'smooth', block: 'start' }))
 }
 function doAct(u) {
   u.done = true
@@ -95,7 +106,7 @@ function doAct(u) {
         <!-- 怎麼去 -->
         <section class="block">
           <div class="block-h">
-            <span class="h2">08:15 怎麼去</span>
+            <span class="h2">{{ DEPART }} 怎麼去</span>
             <span class="muted small">含大眾運輸</span>
           </div>
           <div class="opts">
@@ -125,6 +136,47 @@ function doAct(u) {
           </div>
         </section>
 
+        <!-- 大眾運輸路線推薦 -->
+        <section ref="routeEl" class="block">
+          <div class="block-h">
+            <span class="h2">大眾運輸路線推薦</span>
+            <span class="muted small">{{ DEPART }} 出發</span>
+          </div>
+          <div class="rts">
+            <button v-for="r in transit" :key="r.k" class="rt" :class="{ on: r.k === routeK }" @click="routeK = r.k">
+              <span class="rt-tag">{{ r.tag }}</span>
+              <b>{{ r.title }}</b>
+              <span class="num">{{ r.total }} 分 · ${{ r.fare }}</span>
+            </button>
+          </div>
+          <div class="card rt-card">
+            <div class="rt-sum">
+              <b class="num">{{ DEPART }} <Icon name="arrow" :size="14" /> {{ route.arrive }}</b>
+              <span>步行 {{ route.walk }} 分</span>
+            </div>
+            <div class="rt-why">{{ route.why }}</div>
+            <ol class="steps">
+              <li v-for="(s, i) in route.steps" :key="i" class="step">
+                <span class="st-t num">{{ s.at }}</span>
+                <span class="st-rail" :style="{ '--c': stepStyles[s.kind].color }">
+                  <i><Icon :name="stepStyles[s.kind].icon" :size="13" /></i>
+                </span>
+                <div class="st-c">
+                  <b>{{ s.label }}</b>
+                  <span>{{ s.detail }}</span>
+                </div>
+                <span class="st-m num">{{ s.min }} 分</span>
+              </li>
+              <li class="step end">
+                <span class="st-t num">{{ route.arrive }}</span>
+                <span class="st-rail"><i><Icon name="pin" :size="13" /></i></span>
+                <div class="st-c"><b>抵達{{ route.dest }}</b></div>
+              </li>
+            </ol>
+            <button v-if="route.action" class="btn btn-navy rt-act" @click="toast(route.action.toast)">{{ route.action.text }}</button>
+          </div>
+        </section>
+
         <!-- 接下來 -->
         <section class="block">
           <div class="h2">接下來的移動</div>
@@ -144,7 +196,7 @@ function doAct(u) {
 
         <div class="source">
           <Icon name="info" :size="14" />
-          <span>等車與車程為 yoxi 行程資料中位數；車型費率、捷運時刻與接駁時間為示意值，正式提案需以官方費率與大眾運輸 API 校準。</span>
+          <span>等車與車程為 yoxi 行程資料中位數；車型費率、捷運與公車的路線、時刻、票價及接駁時間為示意值，正式提案需以官方費率與大眾運輸 API 校準。</span>
         </div>
         <div style="height: 30px"></div>
       </div>
@@ -207,6 +259,31 @@ function doAct(u) {
 .leg-key { display: flex; gap: 12px; margin-top: 8px; font-size: 11px; font-weight: 600; color: var(--ink-2); }
 .leg-key span { display: flex; align-items: center; gap: 4px; }
 .leg-key i { width: 9px; height: 9px; border-radius: 3px; }
+
+.rts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+.rt { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 9px 10px; border-radius: 12px; background: #fff; border: 1.5px solid var(--line); text-align: left; transition: all .18s; }
+.rt b { font-size: 13px; color: var(--ink); }
+.rt > .num { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.rt-tag { font-size: 10px; font-weight: 800; color: var(--blue); }
+.rt.on { border-color: var(--navy); background: var(--blue-soft); }
+.rt-card { padding: 14px 14px 12px; }
+.rt-sum { display: flex; align-items: baseline; justify-content: space-between; }
+.rt-sum b { display: flex; align-items: center; gap: 5px; font-size: 20px; font-weight: 800; color: var(--navy); }
+.rt-sum span { font-size: 12px; font-weight: 600; color: var(--ink-3); }
+.rt-why { margin-top: 2px; font-size: 12px; color: var(--ink-2); }
+.steps { list-style: none; margin: 12px 0 0; padding: 0; }
+.step { display: flex; gap: 8px; min-height: 50px; }
+.step.end { min-height: 0; }
+.st-t { width: 38px; flex-shrink: 0; padding-top: 3px; font-size: 12px; font-weight: 700; color: var(--ink-2); }
+.st-rail { --c: var(--navy); position: relative; width: 24px; flex-shrink: 0; display: flex; justify-content: center; }
+.st-rail::after { content: ''; position: absolute; top: 24px; bottom: 0; width: 3px; border-radius: 2px; background: var(--c); }
+.step.end .st-rail::after { display: none; }
+.st-rail i { width: 24px; height: 24px; border-radius: 50%; background: var(--c); color: #fff; display: grid; place-items: center; }
+.st-c { flex: 1; min-width: 0; display: flex; flex-direction: column; padding-bottom: 10px; }
+.st-c b { font-size: 14px; line-height: 24px; }
+.st-c span { font-size: 12px; color: var(--ink-3); line-height: 1.5; }
+.st-m { padding-top: 4px; font-size: 12px; font-weight: 700; color: var(--ink-2); flex-shrink: 0; }
+.rt-act { height: 44px; margin-top: 4px; font-size: 14px; }
 
 .ups { padding: 2px 14px; }
 .up { display: flex; align-items: center; gap: 10px; padding: 11px 0; }
