@@ -61,7 +61,6 @@ export function dotStyle(wait, min = 10, max = 34) {
   return { size: Math.round(min + t * (max - min)), color: binOf(wait).color }
 }
 
-const fmt = (n) => n.toLocaleString('en-US')
 const g = real.pulse_grid
 const a = real.areas
 const band = (mid) => (mid ? `$${mid - 50}–${mid + 50}` : '—')
@@ -69,23 +68,23 @@ const band = (mid) => (mid ? `$${mid - 50}–${mid + 50}` : '—')
 export const slots = [
   {
     id: 'now', label: '07:30', sub: '平日早高峰', time: '平日 07:30–08:30',
-    summary: `平日早高峰全區等車中位數 ${g.now.wait_median.toFixed(1)} 分鐘（近 90 天 ${fmt(g.now.trips)} 筆）。內湖科學園區最久，中位 ${a.neihu.slots.now.wait} 分，且有 10% 的叫車超過 ${a.neihu.slots.now.p90} 分；民生社區相對好叫，中位 ${a.minsheng.slots.now.wait} 分。`,
+    summary: `內湖科學園區最難叫，中位等 ${a.neihu.slots.now.wait} 分；民生社區相對好叫，${a.minsheng.slots.now.wait} 分。`,
     tip: { text: '民生社區往內湖：加入 08:15 順路車，車資省一半', to: 'm-pool' },
   },
   {
     id: 'h9', label: '09:00', sub: '通勤潮後', time: '平日 09:00–10:00',
-    summary: `09 點通勤潮過後，全區中位數降到 ${g.h9.wait_median.toFixed(1)} 分。內湖科學園區中位 ${a.neihu.slots.h9.wait} 分，是這區一天中最好叫車的時段之一。`,
+    summary: `通勤潮過後全區中位降到 ${g.h9.wait_median.toFixed(1)} 分，內湖科學園區只要等 ${a.neihu.slots.h9.wait} 分。`,
     tip: { text: '時間彈性？這個時段叫車等候最短', to: null },
   },
   {
     id: 'h18', label: '18:00', sub: '平日下班', time: '平日 18:00–19:00',
-    summary: `平日 18 點是全天最難叫車的時段。內湖科學園區中位 ${a.neihu.slots.h18.wait} 分，10% 的叫車超過 ${a.neihu.slots.h18.p90} 分，車資多落在 ${band(a.neihu.slots.h18.pay_mid)}。預約回程順路車可以避開這段不確定。`,
+    summary: `全天最難叫車的時段：內湖科學園區中位等 ${a.neihu.slots.h18.wait} 分，10% 超過 ${a.neihu.slots.h18.p90} 分。`,
     tip: { text: '預約 18:20 回程順路車，不用在路邊等', to: 'forecast' },
   },
   {
     id: 'h2130', label: '21:00', sub: '夜間', time: '每日 21:00–22:00',
     event: `小巨蛋活動夜叫車量約平日 ${Math.round(real.arena_events.top_days[0].trips / real.arena_events.normal_day_trips)} 倍`,
-    summary: `21 點南京復興周邊近 90 天有 ${fmt(a.nanjing.slots.h2130.n)} 筆上車，是東區夜間最熱的上車點，中位等車 ${a.nanjing.slots.h2130.wait} 分。小巨蛋有活動的晚上，周邊 21–23 點叫車量約 ${real.arena_events.top_days[0].trips} 筆，一般晚上約 ${real.arena_events.normal_day_trips} 筆。`,
+    summary: `南京復興是東區夜間最熱的上車點，中位等 ${a.nanjing.slots.h2130.wait} 分。`,
     tip: { text: '活動散場前 30 分鐘提醒我叫車', to: null },
   },
 ]
